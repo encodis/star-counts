@@ -1,0 +1,52 @@
+%%----------------------------------------------------------------------------|
+%% BSM USERS GUIDE - MACRO DEFINITIONS                                        |
+%%                                                                            |
+%% P. J. C. Hodder                                                            |
+%%----------------------------------------------------------------------------|
+
+\textheight 220mm
+\textwidth 160mm
+\oddsidemargin 6.6mm
+\evensidemargin 0mm
+\topmargin -6.4mm
+
+\pagenumbering{arabic}
+\renewcommand{\thepage}{\fbox{\em \arabic{page}}}
+\pagestyle{myheadings}
+\markboth{\fbox{BSM: A User's Guide}}{\fbox{BSM: A User's Guide}}
+
+\newcommand{\bsm}{{\sc bsm}}
+\newcommand{\bsmsm}{{\sc bsm.sm}}
+\newcommand{\bsmread}{{\sc bsm\_read}}
+\newcommand{\bsmplot}{{\sc bsm\_plot}}
+\newcommand{\bsminfo}{{\sc bsm\_info}}
+\newcommand{\bsmdiff}{{\sc bsm\_diff}}
+\newcommand{\bsmint}{{\sc bsm\_int}}
+\newcommand{\bsmcol}{{\sc bsm\_col}}
+\newcommand{\bsmver}{bsm-3.2.tar.gz}
+\newcommand{\mkalf}{{\sc mkalf}}
+\newcommand{\mkmlf}{{\sc mkmlf}}
+\newcommand{\mkfms}{{\sc mkfms}}
+\newcommand{\mknlf}{{\sc mknlf}}
+\newcommand{\sm}{{\sc sm}}
+\newcommand{\lf}{LF}
+\newcommand{\cmd}{CMD}
+\newcommand{\fms}{FMS}
+\newcommand{\mlr}{MLR}
+\newcommand{\nin}{\noindent}
+\newcommand{\bv}{\begin{verbatim}}
+\newcommand{\ev}{\end{verbatim}}
+
+\newenvironment{clo}[1]{
+\noindent{\tt {#1}} \\
+\indent\begin{minipage}[t]{6in}}
+{\bigskip\end{minipage}}
+
+\newenvironment{key}[3]{
+\noindent{\tt {#1} [{#2}] {#3}}\\
+\indent\begin{minipage}[t]{6in}}
+{\bigskip\end{minipage}}
+
+\renewcommand{\floatpagefraction}{0.1}
+
+\pssilent

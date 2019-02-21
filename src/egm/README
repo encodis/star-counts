@@ -1,0 +1,32 @@
+ ____  _____    _    ____  __  __ _____ 
+|  _ \| ____|  / \  |  _ \|  \/  | ____|                  External Galaxy Model
+| |_) |  _|   / _ \ | | | | |\/| |  _|                              version 1.7
+|  _ <| |___ / ___ \| |_| | |  | | |___                        P. J.  C. Hodder
+|_| \_\_____/_/   \_\____/|_|  |_|_____|                         Copyright 1995
+
+
+This is the README file for the External Galaxy Model code, version 1.7.
+
+To unpack the archive containing the EGM source code (if you haven't already
+done so) create a directory to store the files and ...
+
+  ... if you have:   EgmSrc17.zip
+         then run:   unzip EgmSrc17.zip
+
+  ... if you have:   egmsrc17.tar.gz
+         then run:   gunzip egmsrc17.tar.gz | tar xvf -
+
+Read the installation instructions in the file INSTALL.
+
+A list of all the files in this release is in the file MANIFEST. Read this file
+and make sure you have all the files.
+
+Other files you will probably need include:
+
+   BsmSrc32.zip OR bsmsrc32.tar.gz - the Bahcall & Soneira galaxy model
+
+   BsmLib10.zip OR bsmlib10.tar.gz - a library of CMD and LF files
+
+   GmuSrc12.zip OR gmusrc12.tar.gz - a collection of useful utilities
+
+Each of this includes README and INSTALL files of their own.

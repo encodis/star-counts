@@ -1,0 +1,71 @@
+ __  __    _    _   _ ___ _____ _____ ____ _____ 
+|  \/  |  / \  | \ | |_ _|  ___| ____/ ___|_   _|         External Galaxy Model
+| |\/| | / _ \ |  \| || || |_  |  _| \___ \ | |                     version 1.7
+| |  | |/ ___ \| |\  || ||  _| | |___ ___) || |                 P. J. C. Hodder
+|_|  |_/_/   \_\_| \_|___|_|   |_____|____/ |_|                  Copyright 1995
+
+
+This is a manifest of all the files in the External Galaxy Model, version 1.7
+distribution.
+
+Source code files:
+
+calc_col.c
+calc_dsk.c
+calc_nor.c
+calc_num.c
+calc_prj.c
+calc_spd.c
+calc_thk.c
+col_dist.c
+convlv.c
+egm-diag.c
+egm-grid.c
+egm.h
+extgal.c
+find_idx.c
+init_col.c
+init_def.c
+init_fms.c
+init_lf.c
+init_num.c
+keyword.h
+obscure.c
+parsetok.c
+quit_egm.c
+read_dat.c
+read_par.c
+scan_com.c
+spline.c
+splint.c
+writ_col.c
+writ_hed.c
+writ_num.c
+writ_res.c
+writ_vrb.c
+
+Miscellaneous files:
+
+Makefile
+README
+INSTALL
+MANIFEST
+ofiles.lst
+default.pm
+test.egm
+
+Documentation files:
+
+doc/egm_macros.tex
+doc/egm_guide.tex
+doc/figure10.eps
+doc/figure10.fig
+doc/figure11.eps
+doc/figure11.fig
+doc/figure12.eps
+doc/figure12.fig
+doc/figure7.eps
+doc/figure8.eps
+doc/figure9.eps
+
+

@@ -1,0 +1,48 @@
+ ___ _   _ ____ _____  _    _     _     
+|_ _| \ | / ___|_   _|/ \  | |   | |                      External Galaxy Model
+ | ||  \| \___ \ | | / _ \ | |   | |                                version 1.7
+ | || |\  |___) || |/ ___ \| |___| |___                        P. J.  C. Hodder
+|___|_| \_|____/ |_/_/   \_\_____|_____|                         Copyright 1995
+
+
+This file contains installation instructions for the External Galaxy Model,
+version 1.7.
+
+Read the file MANIFEST and check that you have all the required files.
+
+If you are reading this file you have probably unpacked the archive file 
+already. If not then read the README file and unpack the files.
+
+To compile and run EGM you will need to have an ANSI C compiler on your system.
+The FSF compiler "gcc" works just fine (EGM was written under it). The SunOS
+compiler "cc" will not work - the ANSI C version "acc" probably will, though 
+this has not been tested. On a PC using MS-DOS any ANSI compliant C compiler 
+should work. The port of "gcc" to DOS machines ("djgpp") has been tested and 
+is known to work.
+
+Now edit the file "Makefile". Change the definition of the "DEFS" variable to 
+a library of CMD and LF files. If you don't have a such a library read the
+README file and get a copy of one. Install it separately. You can also change
+"BINDIR" to point to where you want the executable installed. Edit "CFLAGS" if
+you like - it's not a good idea to change anything else.
+
+On a DOS machine running DJGPP type:
+
+	make egm.exe
+
+On anything else type:
+
+	make egm
+
+If everything compiles successfully type:
+
+	make install
+	make clean
+
+To make a PostScript copy of the documentation type:
+
+	make manual
+
+This requires that you have the LaTeX document preparation system and the
+"dvips" program on your system.
+

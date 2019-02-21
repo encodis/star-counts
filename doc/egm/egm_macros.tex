@@ -1,0 +1,49 @@
+%%----------------------------------------------------------------------------|
+%% EGM USERS GUIDE - MACRO DEFINITIONS                                        |
+%%                                                                            |
+%% P. J. C. Hodder                                                            |
+%%----------------------------------------------------------------------------|
+
+\textheight 220mm
+\textwidth 160mm
+\oddsidemargin 6.6mm
+\evensidemargin 0mm
+\topmargin -6.4mm
+
+\pagenumbering{arabic}
+\renewcommand{\thepage}{\fbox{\em \arabic{page}}}
+\pagestyle{myheadings}
+\markboth{\fbox{EGM: A User's Guide}}{\fbox{EGM: A User's Guide}}
+
+\newcommand{\egm}{{\sc egm}}
+\newcommand{\egmsm}{{\sc egm.sm}}
+\newcommand{\egmread}{{\sc egm\_read}}
+\newcommand{\egmplot}{{\sc egm\_plot}}
+\newcommand{\egminfo}{{\sc egm\_info}}
+\newcommand{\egmdiff}{{\sc egm\_diff}}
+\newcommand{\egmint}{{\sc egm\_int}}
+\newcommand{\egmcol}{{\sc egm\_col}}
+\newcommand{\egmprint}{{\sc egm\_print}}
+\newcommand{\egmver}{egm--1.0.tar.Z}
+\newcommand{\sm}{{\sc sm}}
+\newcommand{\lf}{LF}
+\newcommand{\cmd}{CMD}
+\newcommand{\fms}{FMS}
+\newcommand{\mlr}{MLR}
+\newcommand{\nin}{\noindent}
+\newcommand{\sci}[2]{$#1 \times 10^{#2}$}
+
+\newenvironment{clo}[1]{
+\noindent{\tt {#1}} \\
+\indent\begin{minipage}[t]{6in}}
+{\bigskip\end{minipage}}
+
+\newenvironment{key}[3]{
+\noindent{\tt {#1} [{#2}] {#3}}\\
+\indent\begin{minipage}[t]{6in}}
+{\bigskip\end{minipage}}
+
+\renewcommand{\floatpagefraction}{0.1}
+\renewcommand{\bottomfraction}{0.5}
+
+\pssilent

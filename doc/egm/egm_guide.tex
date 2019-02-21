@@ -1,0 +1,1527 @@
+%%----------------------------------------------------------------------------|
+%% EGM USERS GUIDE                                                            |
+%%                                                                            |
+%% P. J. C. Hodder                                                            |
+%%----------------------------------------------------------------------------|
+
+\documentstyle[11pt,twoside,psfig]{article}
+
+\input{egm_macros.tex}
+
+\begin{document}  
+
+%%----------------------------------------------------------------------------|
+%% TITLE PAGE                                                                 |
+%%----------------------------------------------------------------------------|
+
+\thispagestyle{empty}
+\noindent
+\framebox[16cm]{\parbox{16cm}{
+\begin{center}
+\huge \bf 
+A Users Guide to EGM -- 
+
+\rule{0mm}{10mm}
+
+A Galaxy Modelling Program
+
+\rule{0mm}{10mm}
+
+Version 1.7
+
+\end{center}}}
+
+\rule{0mm}{10mm}
+
+\noindent
+\framebox[16cm]{\parbox{16cm}{
+{\begin{center}
+\large \bf
+Contents
+\end{center}}
+\large
+\begin{tabbing}
+\rule{2cm}{0cm} \= \rule{1cm}{0cm} \= \rule{1cm}{0cm} \= \rule{9cm}{0cm} \= \kill
+\> 1  \> Introduction \> \> ~1 \\ \\
+\> 2  \> A Brief Review of EGM \> \> ~1\\
+\> \> 2.1 \> The Model \> ~1 \\
+\> \> 2.2 \> Parameter Files \> ~1\\
+\> \> 2.3 \> Running EGM \> ~2 \\
+\> \> 2.4 \> Command Line Options \> ~3 \\
+\> \> 2.5 \> Error Codes \& Runtime Statistics \> ~5 \\ \\
+\> 3  \> Parameter Description and Formats \> \> ~6 \\
+\> \> 3.1 \> Adjustable Parameters \> ~6 \\
+\> \> 3.2 \> File Formats \> 10 \\
+\> \> 3.3 \> Output Format \> 10 \\ \\
+\> 4  \> Model Description \> \> 22 \\
+\> \> 4.1 \> Geometrical Considerations \> 22 \\
+\> \> 4.2 \> Component Models \> 24 \\
+\> \> 4.3 \> Distribution Functions \> 26 \\
+\> \> 4.4 \> Program Function Details \> 27 \\ \\
+\end{tabbing}
+}}
+
+%%----------------------------------------------------------------------------|
+%% INTRODUCTION                                                               |
+%%----------------------------------------------------------------------------|
+
+\newpage
+\setcounter{page}{1}
+\section{Introduction}
+
+This guide is divided into 4 main sections.  This is the first section (not
+surprisingly!). Section 2 is a brief overall review of the model and how
+to run \egm. Section 3 describes the model parameters in more detail, and
+Section 4 contains background information and references for some of the
+scientific background. 
+
+Bug reports and suggestions are welcome. The author of \egm\ (Philip Hodder)
+can be contacted at the Department of Geophysics and Astronomy, University of
+British Columbia, \#129-2219 Main Mall, Vancouver, B.C., Canada V6T 1Z4, or
+via E--mail at {\tt hodder@geop.ubc.ca}.
+
+%%----------------------------------------------------------------------------|
+%% A BRIEF REVIEW OF EGM                                                      |
+%%----------------------------------------------------------------------------|
+
+\section{A Brief Review of EGM}
+ 
+%%----------------------------------------------------------------------------|
+\subsection{The Model}
+
+The \egm\ program computes number counts and colour distributions for a
+model of an (external) spiral galaxy containing at two or three components.
+Using user supplied luminosity functions and colour-magnitude diagrams \egm\ 
+will integrate along a line of sight to a particular field in the galaxy,
+down to the desired limiting magnitude.  Almost every parameter 
+of the model can be altered by the user by specifying it in a parameter file
+or on the command line -- reasonable defaults are used for all other
+parameters (see \S 3).
+
+Currently the forms of the density distributions of the components are
+fixed. The disk component is an exponential disk (varying in height
+and length) whose scale lengths can be specified. The form of the spheroidal 
+component is a de Vaulcouleurs ${\rm r}^\frac{1}{4}$ spheroid. The
+optional third component is also an exponential disk whose parameters may
+be varied independently of the first, thin, disk.
+
+%%----------------------------------------------------------------------------|
+\subsection{Parameter Files}
+
+\egm\ is run entirely from the command line -- it has no direct interaction
+with the user in the form of prompts, queries and so on, although it will
+print warnings before it quits when it cannot do something. A
+{\em parameter file} contains all the necessary information to successfully
+produce a model -- it is therefore vital that the user fully understand
+all the necessary elements of this file. This isn't as daunting as it 
+sounds -- whilst there are 56 parameters that {\em can} be specified, you can
+usually get away with using 7 or 8. The others may be changed if needed.
+Most of the commonly changed parameters can also be specified on the
+command line. Values in a parameter file will override any command line 
+arguments if it occurs after them, and vice versa.
+
+The parameter file contains specifications for the field you wish to
+integrate along (in arc minutes along the major and minor axes), the field 
+size (in square degrees), the magnitude limits, the files containing the
+luminosity functions and colour--magnitude diagrams, and so on. 
+Note that unlike the original Bahcall \& Soneira (B\&S) code, \egm\ will 
+work with luminosity functions (\lf s), colour magnitude diagrams (\cmd s)
+not just those in $V$ and $B-V$. This is because the user supplies this 
+data -- it is not calculated from a hard--coded analytical formula during 
+execution of the program, or from a function call.
+
+Section 3 contains a list of all the parameters and their defaults. 
+It also lists their {\em keywords} -- i.e. the words in the parameter file 
+that \egm\ recognizes. For example, to specify a field size of 0.6 square 
+degrees, you could put this line in your parameter file:
+\begin{verbatim}
+OMEGA = 0.6
+\end{verbatim}
+All keywords must be in uppercase, and the keyword and the actual value
+must be separated by an equals sign. There can be any number of spaces
+around the {\tt =}. Any line beginning with a \# is treated as a comment and is
+ignored.
+
+I recommend that for the sake of consistency all parameter files end
+in ``.pm'' -- \egm\ comes with ``default.pm'' as an example. The \cmd\ files
+end in ``.(mag)(col)'' (e.g. m5.vbv is a \cmd\ for M5 in V and B--V). Likewise
+the \lf s end in ``.(mag)lf'' (e.g. analytic.vlf).
+Although \egm\ does not care what these files are called, it 
+{\em does} care how the data inside it is arranged (see \S3 for a description
+of the various file formats).
+
+\egm\ will look in several places for these files. Firstly it
+will look in the current directory. Then it will look for them in the
+directory specified by the {\tt LIBRARY} keyword in the parameter file.
+Next it will check the command line for the {\tt -L} option.
+Lastly it will look in a standard 
+library. This is a directory containing a selection of \lf s and \cmd s whose 
+pathname is compiled into \egm\ during installation.
+You can of course add files to this library as you need them.
+\egm\ will quit (and complain) if it can't find the required files somewhere.
+An example of a parameter file is shown below:
+\begin{verbatim}
+nukta-1> cat default.pm
+# Model Parameters #
+X0        = 50.0
+Y0        = 90.0
+OMEGA     = 1.0
+DGC_FILE  = dskm67.vbv
+SGC_FILE  = m13.vbv
+DLF_FILE  = analytic.vlf
+SLF_FILE  = analytic.vlf
+\end{verbatim}
+
+%%----------------------------------------------------------------------------|
+\subsection{Running EGM}
+
+So, once you have your parameter file set up (you can use your favourite
+text editor to do this -- it is just a text file) you can run \egm\ by 
+typing the following at the system prompt:
+\begin{verbatim}
+nukta-2> egm my_params.pm
+\end{verbatim}
+The model will then be printed out to the terminal/xterm/whatever. Since
+the output can be 600 to 700 lines long this is not terribly
+useful. I recommend you redirect the output to a file of your choice:
+\begin{verbatim}
+nukta-3> egm my_params.pm > my_results.dat
+\end{verbatim}
+Alternatively,
+\begin{verbatim}
+nukta-3> egm my_params.pm -o my_results.dat
+\end{verbatim}
+\egm\ (note that the program name is ``egm'', in lowercase) is usually quite
+quick to run, but you may want to put it in the background anyway:
+\begin{verbatim}
+nukta-4> egm my_params.pm > my_results.dat &
+\end{verbatim}
+\egm\ outputs the model results in one big file (though this may change in 
+future versions).
+There is a short header section at the front of the file. This is
+essentially a copy of all relevant parameters. The number counts are printed  
+out next followed by the colour distribution. Additional blocks of data may 
+then be printed (depending on various options set on the command line) and
+each block is prefaced with an identifier. Section 3.3 describes the output
+in more detail.
+
+You can now split this file up into the separate pieces and display it using
+whatever plotting package turns you on! \egm\ does NO plotting itself -- a
+design goal was to make it as machine independent as possible.
+A macro package for SuperMongo (\sm) is included in the source code
+archive. This
+takes the whole file output by \egm\ and plots the number counts and
+colour distributions automatically. See Appendix B for more information.
+ 
+%%----------------------------------------------------------------------------|
+\subsection{Command Line Options}
+
+There are several command line options that can be given to \egm. These
+options override those parameters given in the parameter file (which, in turn,
+override the default values supplied by the program).
+These options can be useful if you want to run the same model
+for a different field and don't want to create another parameter file.
+The options are:
+\medskip
+
+\begin{clo}{-a absorption\_mode}
+The absorption mode to use in the model. Allowable choices are 'none', 'cosec'
+and 'Sandage' for no absorption, the cosecant law and the Sandage model
+respectively. Only the first letter of the word is important, and it may 
+be in upper or lower case.
+\end{clo}
+
+\begin{clo}{-A absorption\_value}
+A fixed amount of absorption to include in the model (in magnitudes).
+\end{clo}
+
+\begin{clo}{-bm magnitude\_bin}
+Size of magnitude bin for scaling differential number counts on output.
+\end{clo}
+
+\begin{clo}{-cb magnitude}
+The brightest magnitude of stars to be included in the colour distribution.
+\end{clo}
+
+\begin{clo}{-ce colour\_error}
+The colour error in magnitudes. The default is 0.1.
+\end{clo}
+
+\begin{clo}{-cf magnitude}
+The faintest magnitude of stars to be included in the colour distribution.
+\end{clo}
+
+\begin{clo}{-cl colour}
+The minimum colour for the colour distribution.
+\end{clo}
+
+\begin{clo}{-cu colour}
+The maximum colour for the colour distribution.
+\end{clo}
+
+\begin{clo}{-dm magnitude\_interval}
+The apparent magnitude interval for the number counts.
+\end{clo}
+
+\begin{clo}{-dM magnitude\_interval}
+The absolute magnitude interval for number counts and colour distribution.
+\end{clo}
+
+\begin{clo}{-dn disk[:thick\_disk]:spheroid}
+The density normalization radii for the galaxy model components, in parsecs
+\end{clo}
+
+\begin{clo}{-D distance}
+The distance to the galaxy (in parsecs).
+\end{clo}
+
+\begin{clo}{-es eccentricity}
+The eccentricity of the spheroid component.
+\end{clo}
+
+\begin{clo}{-f field\_size}
+The size of the field in square degrees.
+\end{clo}
+
+\begin{clo}{-F}
+This tells \egm\ to integrate all components on the far side of the galaxy 
+(i.e. on the other side of the disk) as well as the near side. The default is 
+to only use the side closest to the observer, but this may change in future 
+versions. (See \S4 for further information).
+\end{clo}
+
+\begin{clo}{-FD}
+\egm\ will integrate the near and far sides of the disk component, and the only
+the near sides for the other components.
+\end{clo}
+
+\begin{clo}{-FS}
+\egm\ will only integrate the far side of the spheroid component.
+\end{clo}
+
+\begin{clo}{-FT}
+\egm\ will only integrate the far side of the thick disk component.
+\end{clo}
+
+\begin{clo}{-h}
+This option prints a list of command line options to the standard output 
+stream.
+\end{clo}
+
+\begin{clo}{-H}
+This option prints a list of parameter keywords to the standard output stream.
+\end{clo}
+
+\begin{clo}{-i inclination}
+The inclination of the disk of the galaxy (in degrees).
+\end{clo}
+
+\begin{clo}{-L path}
+Specifies an alternate directory for the \lf\ and \cmd\ files.  The
+default is  ``/home/hodder/lib/egm/''  (note the ending ``/'').  The
+keyword {\tt LIBRARY}  may also be  used in the parameter file for  this
+purpose.
+\end{clo}
+
+\begin{clo}{-mb magnitude}
+The brightest apparent magnitude to be included in the model.
+\end{clo}
+
+\begin{clo}{-mf magnitude}
+The faintest apparent magnitude to be included in the model.
+\end{clo}
+
+\begin{clo}{-Md magnitude}
+The brightest absolute magnitude of the disk luminosity function that is
+to be included.
+\end{clo}
+
+\begin{clo}{-Mf magnitude}
+The faintest absolute magnitude of both the disk and spheroid luminosity
+functions that is to be included in the model.
+\end{clo}
+
+\begin{clo}{-Ms magnitude}
+The brightest absolute magnitude of the spheroid luminosity function that is
+to be included.
+\end{clo}
+
+\begin{clo}{-MS}
+This tells \egm\ to include a main-sequence colour-magnitude diagram in the
+calculations. The actual file name to use for this \cmd\ must be specified
+in the parameter file using the {\tt MSC\_FILE} keyword. (See \S4 for further 
+information).
+\end{clo}
+
+\begin{clo}{-o filename}
+Sends the output of \egm\ to {\tt filename}, rather than standard output.
+\end{clo}
+
+\begin{clo}{-P "parameter file entry"}
+This is an alternate way to specify any parameter that has a parameter file
+keyword. The string after the {\tt -P} should be of the same format as an 
+entry in the parameter file. For example, there is no explicit option to
+set the disk \lf\ but one could include {\tt -P "DLF\_FILE = foo.vlf"} on
+the command line to set it without editting the parameter file.
+\end{clo}
+
+\begin{clo}{-re radius}
+The effective (half--light) radius of the spheroid (in parsecs).
+\end{clo}
+
+\begin{clo}{-sh disk\_scale\_height}
+The scale height of the disk, in parsecs.
+\end{clo}
+
+\begin{clo}{-sl disk\_scale\_length}
+The scale length of the disk, in parsecs.
+\end{clo}
+
+\begin{clo}{-T}
+This tells \egm\ to include the thick disc in the calculations. The default
+is to not include this component. The parameters of this thick disk must be
+set in the parameter file if anything other than the defaults values are to
+be used (see \S3).
+\end{clo}
+
+\begin{clo}{-V}
+This turns on ``verbose mode''. \egm\ will print out extra data 
+concerning the distribution functions used in the model. This is
+mainly used for debugging purposes. See \S3.4 for more information.
+\end{clo}
+
+\begin{clo}{-x x\_position}
+The position along the major axis in arc minutes. The relevant geometry is
+described in section 4.1.
+\end{clo}
+
+\begin{clo}{-y y\_position}
+The position along the minor axis in arc minutes.
+\end{clo}
+
+%%----------------------------------------------------------------------------|
+\subsection{Error Codes \& Runtime Statistics}
+
+This section will only be useful for a few people, but it should be written
+down somewhere! If \egm\ runs to completion the normal exit status is 0.
+If at any point during execution \egm\ encounters an error it will stop
+with an error message and the appropriate exit status.
+
+\begin{description}
+\item[0] Indicates successful completion of program. No error message.
+\item[1] A usage error. Usually this means that no command line options were
+specified.
+\item[2] An invalid command line option was used. See section 2.4, Command
+Line Options, and try again.
+\item[3] An invalid parameter was found in the parameter file. See section 3.1,
+Adjustable Parameters, for a complete list of the allowed keywords.
+\item[4] The file specified in one of the parameter file keywords does not 
+exist. This may also mean that no parameter file was given on the command
+line, or that the library of standard files does not exist or is
+incorrectly specified. See Appendix~A for installation and compilation
+guidelines.
+\item[5] A file could not be read properly. The file is most likely in the
+wrong format. See section 3.2, File Formats.
+\item[6] Memory allocation error. \egm\ could not allocate enough memory
+for one of its internal tables. See your friendly, neighbourhood systems
+manager.
+\item[7] A math error. Currently this will only be generated by the spline
+interpolation routine. Make sure all the input files are monotonically
+increasing in the first column.
+\end{description}
+
+\egm\ runs fairly quickly on most computer systems. The following times have
+been recorded on three different setups. The model used was given by the 
+default set of parameters. The {\tt -O} flag was used during compilation to
+produce more optimised code.
+
+\begin{tabbing}
+\rule{1cm}{0cm} \= \rule{10cm}{0cm} \= \kill 
+\> IBM PC Clone (25 MHz, 386DX, 387 Co-Processor) : \> 39.0 seconds \\
+\> Sparc 1 (SunOS) [iridium] :                      \> 15.0 seconds \\
+\> Sparc 2 (SunOS) [wendigo] :                      \> ~8.0 seconds 
+\end{tabbing}
+
+%%----------------------------------------------------------------------------|
+%% PARAMETER DESCRIPTION AND FORMATS                                          |
+%%----------------------------------------------------------------------------|
+
+\section{Parameter Description and Formats}
+ 
+%%----------------------------------------------------------------------------|
+\subsection{Adjustable Parameters}
+
+There follows a list of all the parameters that can be adjusted, though 
+it usually won't be necessary to change most of these.
+Those parameters marked with an asterisk ($*$)  are
+ones that  I think should  at least be thought about before you run \egm,
+even if you don't change them. Those marked with a plus ($+$) shouldn't be
+changed unless you're really sure you  know what you're doing. The  list
+is in no particular order -- the parameter file also does not need to be
+arranged  in any  special way.  The list is  given  by  keyword with the
+default in parentheses (note that most of these defaults apply to M31).
+\medskip
+
+\begin{key}{A\_0}{100.0}{}
+The scale height for absorption/extinction (in parsecs).
+\end{key}
+
+\begin{key}{A\_1}{0.15}{}
+The absorption in magnitudes at the Galactic poles (i.e. $a_1(90^\circ)$) in 
+the ``cosec'' absorption law. The default is for the $V$ filter.
+\end{key}
+
+\begin{key}{A\_2}{0.165}{}
+The $a_2$ parameter for the Sandage absorption law (see \S 4.2). The default 
+value is for the $V$ filter.
+\end{key}
+
+\begin{key}{A\_3}{1.192}{}
+The $a_3$ parameter for the Sandage absorption law (see \S 4.2). The default 
+value is for the $V$ filter.
+\end{key}
+
+\begin{key}{ABS}{0.0}{}
+An arbitrary value (in magnitudes) to include in the model. This can simulate
+absorption in our own Galaxy.
+\end{key}
+
+\begin{key}{AMODE}{Sandage}{}
+This keyword selects the absorption mode to be used for the model. Possible 
+values are ``none'', ``cosec'' and ``Sandage'' to use no absorption,
+the cosecant law or the Sandage obscuration model. Like the {\tt -a} option
+only the first letter of the word is important and it may be in upper or
+lower case.
+\end{key}
+
+\begin{key}{COL\_BIN}{0.20}{(*)}
+The colour bin size for output. The colour distribution will be scaled to 
+number of stars per ({\tt COL\_BIN}) magnitude interval.
+\end{key}
+
+\begin{key}{COL\_ERR}{0.10}{(*)}
+The FWHM of the Gaussian error function convolved with the 
+calculated colour distribution to produce a predicted colour distribution.
+\end{key}
+
+\begin{key}{COL\_NAME}{B-V}{}
+The name of the colour scale. It has no effect on the model calculation.
+\end{key}
+
+\begin{key}{CON\_FAC}{1.0E-6}{(+)}
+A convergence criterion for ceasing integration. When the contribution to
+the number counts of one element is less than {\tt CON\_FAC} times the total, 
+the integration is stopped. (See section 4.4.)
+\end{key}
+
+\begin{key}{DEL\_ABS}{0.05}{}
+The absolute magnitude interval used during calculation.
+\end{key}
+
+\begin{key}{DEL\_APP}{0.5}{}
+The apparent magnitude interval used during calculation.
+\end{key}
+
+\begin{key}{DEL\_COL}{0.005}{(+)}
+The colour interval for calculation before convolution.
+\end{key}
+
+\begin{key}{DGC\_FILE}{dskm67.vbv}{(*)}
+The file containing the colour--magnitude information for the disk giants.
+\end{key}
+
+\begin{key}{DISTANCE}{725000.0}{}
+The distance to the galaxy in parsecs.
+\end{key}
+
+\begin{key}{DLF\_FILE}{wielen.vlf}{(*)}
+The file containing the \lf\ for the disk.
+\end{key}
+
+\begin{key}{DNR}{100:100 $|$ 10:10:10}{(*)}
+The density normalization radii, in parsecs, for each of the components. For
+a two component model the string refers to disk and spheroid; for the three
+comppnent model it refers to disk, thick disk amd spheroid. These values are
+used to calculate the actual density normalization.
+\end{key}
+
+\begin{key}{DR\_D}{25.0}{}
+The distance increment for integration in the disk (in parsecs).
+\end{key}
+
+\begin{key}{DR\_T}{25.0}{}
+The distance increment for integration in the thick disk (in parsecs).
+\end{key}
+
+\begin{key}{DR\_S}{1000.0}{}
+The distance increment for integration in the spheroid (in parsecs).
+\end{key}
+
+\begin{key}{DSK\_ABS}{1.0}{}
+An extra amount of absorption included when integrating through the disk (i.e.
+it applies to calculations performed on the far side of the model only).
+\end{key}
+
+\begin{key}{E\_SPHER}{0.8}{}
+The spheroid axis ratio.
+\end{key}
+
+\begin{key}{FAR\_DISK}{FALSE}{}
+Integrate the far side of the disk in addition to the ``near'' side.
+\end{key}
+
+\begin{key}{FAR\_SIDE}{FALSE}{}
+Integrate the far side of all the components in addition to the ``near'' side.
+\end{key}
+
+\begin{key}{FAR\_SPHD}{FALSE}{}
+Integrate the far side of the spheroid in addition to the ``near'' side.
+\end{key}
+
+\begin{key}{FAR\_THIK}{FALSE}{}
+Integrate the far side of the thick disk in addition to the ``near'' side.
+\end{key}
+
+\begin{key}{FMS\_FILE}{analytic.vfm}{(*)}
+The file containing the fraction of stars on the main sequence as a function
+of absolute magnitude. This is only needed when the main sequence is being
+included.
+\end{key}
+
+\begin{key}{GSH\_D}{250.0}{}
+The scale height of (the giants in) the disk (in parsecs).
+\end{key}
+
+\begin{key}{GSH\_T}{1300.0}{}
+The scale height of (the giants in) the thick disk (in parsecs).
+\end{key}
+
+\begin{key}{INC}{77.5}{}
+The inclination of the disk in degrees. This is defined so that an 
+inclination of $90^{\circ}$ is edge on to the observer.
+\end{key}
+
+\begin{key}{LIBRARY}{/home/hodder/lib/egm}{}
+The standard library of \lf, \cmd\ and \fms\ files, compiled into \egm\ during 
+installation.
+\end{key}
+
+\begin{key}{M\_BRI}{-6.0}{}
+The absolute magnitude of the bright end cutoff for all the \lf s.
+\end{key}
+
+\begin{key}{M\_DIM}{16.5}{}
+The absolute magnitude of the faint end cutoff of all \lf s.
+\end{key}
+
+\begin{key}{MA\_BRT}{16.0}{}
+The brightest apparent magnitude used in the model.
+\end{key}
+
+\begin{key}{MA\_DIM}{26.0}{}
+The limiting apparent magnitude of the model. The integration will not be 
+continued for stars fainter than this limit.
+\end{key}
+
+\begin{key}{MAG\_BIN}{0.0}{}
+The bin size to use for scaling the counts. A value of 
+0.0 indicates that no scaling occurs.
+\end{key}
+
+\begin{key}{MAG\_NAME}{V}{}
+The name of magnitude scale. It has no effect on the model calculation, but 
+has been included for completeness.
+\end{key}
+
+\begin{key}{MAX\_COL}{3.0}{(*)}
+The maximum colour of the colour distribution. The default value of 3.0 
+refers to the default $B-V$ colour.
+\end{key}
+
+\begin{key}{MBC}{16.0}{}
+The brightest apparent magnitude of stars to be included in the colour 
+distribution.
+\end{key}
+
+\begin{key}{MFC}{26.0}{}
+The faintest apparent magnitude of stars to be included in the colour 
+distribution.
+\end{key}
+
+\begin{key}{MIN\_COL}{0.0}{(*)}
+The minimum colour of the colour distribution. The default value of 0.0 
+refers to the default $B-V$ colour.
+\end{key}
+
+\begin{key}{MS\_FILE}{ms.vbv}{(*)}
+The file containing the colour--magnitude information for the (optional)
+main sequence.
+\end{key}
+
+\begin{key}{OMEGA}{0.001}{(*)}
+The size of the field (in square degrees).
+\end{key}
+
+\begin{key}{PSL\_D}{5500.0}{}
+The scale length of the disk (in parsecs).
+\end{key}
+
+\begin{key}{PSL\_T}{5500.0}{}
+The scale length of the thick disk (in parsecs).
+\end{key}
+
+\begin{key}{R\_CO}{100.0}{}
+The scale radius used in the Caldwell \& Ostriker model, if it is enabled.
+\end{key}
+
+\begin{key}{R\_EK}{2670.0}{}
+The de Vaucouleurs radius of the spheroid (in parsecs).
+\end{key}
+
+\begin{key}{R\_MAX\_D}{362500.0}{}
+The maximum distance to integrate to in the disk (in parsecs).
+\end{key}
+
+\begin{key}{R\_MAX\_T}{362500.0}{}
+The maximum distance to integrate to in the thick disk (in parsecs).
+\end{key}
+
+\begin{key}{R\_MAX\_S}{362500.0}{}
+The maximum distance to integrate to in the disk (in parsecs).
+\end{key}
+
+\begin{key}{R\_MIN}{0.0}{}
+The distance to start integration from in the disk (in parsecs). This is
+measured from the plane of the galaxy, not from the observer.
+\end{key}
+
+\begin{key}{SGC\_FILE}{m13.vbv}{(*)}
+The file containing the colour--magnitude information for the spheroid giants.
+\end{key}
+
+\begin{key}{SLF\_FILE}{dacosta.vlf}{(*)}
+The file containing the \lf\ for the spheroid.
+\end{key}
+
+\begin{key}{THICK}{FALSE}{}
+Include a thick disk component in the model.
+\end{key}
+
+\begin{key}{TGC\_FILE}{dskm67.vbv}{(*)}
+The file containing the colour--magnitude information for the thick disk 
+giants.
+\end{key}
+
+\begin{key}{TLF\_FILE}{wielen.vlf}{(*)}
+The file containing the \lf\ for the thick disk.
+\end{key}
+
+\begin{key}{USE\_MS}{FALSE}{}
+Include a main-sequence \cmd\ in the calculations. See the descriptions
+of the {\tt MSC\_FILE} and {\tt FMS\_FILE} keywords, and section 4.3 for 
+more information.
+\end{key}
+
+\begin{key}{VERBOSE}{FALSE}{}
+Print out all data arrays. This data is appended to the normal output of
+\egm. The format used is described in section 3.3.
+\end{key}
+
+\begin{key}{X0}{23.74}{(*)}
+The position of the field in arc minutes along the major axis.
+\end{key}
+
+\begin{key}{Y0}{0.00}{(*)}
+The position of the field in arc minutes along the minor axis.
+\end{key}
+
+%%----------------------------------------------------------------------------|
+\subsection{File Formats}
+
+One of the key features of \egm\ is the  ability of the user  to specify a
+luminosity function and a colour-magnitude diagram. If  you do use  your
+own you may want to check that the right parameters are set.  All of the
+defaults assume a $V$ luminosity function and a $B-V$  colour.  It is also
+assumed that  every entry is a  floating point number (float or double).
+\egm\ currently uses double precision in all floating point calculations.
+For use with the {\tt -MS} option a file giving the fraction of stars on the
+main sequence can also be specified. Any line beginning with a ``\#'' is 
+considered a comment and is ignored.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccc} \\
+Luminosity Functions: & & Colour Magnitude Diagrams: & & Fraction on M-S: \\
+M[1] \hspace{1cm} $\log_{10}$N[1] & \hspace{1cm} & M[1] \hspace{1cm} C[1] & \hspace{1cm} & M[1] \hspace{1cm} F[1] \\
+... \hspace{1cm} ... & \hspace{1cm} & ... \hspace{1cm} ... & \hspace{1cm} & ... \hspace{1cm} ... \\
+M[N] \hspace{1cm} $\log_{10}$N[N] & \hspace{1cm} & M[N] \hspace{1cm} C[N] & \hspace{1cm} & M[N] \hspace{1cm} F[N] 
+\end{tabular}
+\end{table}
+\noindent where M, C, F and N are magnitudes, colours, fractions ($<1$) and 
+numbers respectively.
+ 
+%%----------------------------------------------------------------------------|
+\subsection{Output Format}
+
+\egm\ sends all output to the standard output stream -- it may therefore
+be redirected to a file. The format used depends somewhat on the command
+line options that have been set. The first part of the output is always
+a header section, each line of which starts with a ``\#''. The data shown
+here is basically a printout of all the parameters used to calculate
+the model. A copy of the header section of the output is shown in Figure~1 (two
+component model) and Figure~4 (three component model). The only real change
+is the inclusion of the thick disk parameters in the latter. In both types the
+value of the ``{\tt SPH}'' entry will change to ``{\tt C \& O}'' if the 
+Caldwell \& Ostriker spheroid model has been used. The ``{\tt rek}'' entry 
+will then be changed to ``{\tt rco}''. 
+
+The section  beginning with ``{\tt Stars in COL}''  contains results  for  
+the colour distribution in  the
+order disk, spheroid  and total. The first line  is the number of stars,
+then  the mean colours  of each distribution. Next  is the  fraction  of
+stars on the main  sequence,  followed by  the fraction of giants  in
+each one.  The number distribution  comes next: the  first 3 columns are
+the magnitude  bin  ranges  and centre. In  the  next 6  columns, an ``A''
+indicates  differential  counts (stars per magnitude bin), an ``N'' integral 
+counts (cumulative counts down to that magnitude). The letters ``d'', ``s'' 
+and ``t'' indicate  disk, spheroid and total counts respectively. 
+
+Care should be taken when interpreting the
+differential counts if the magnitude bin size ({\tt -bm} or 
+{\tt MAG\_BIN}) is not equal to 0.0. In the default case 
+the differential counts are in stars per magnitude bin (i.e. all the stars in
+that bin between V1 and V2). Setting the magnitude
+bin size to anything other than 0.0 will make \egm\ scale the counts to that
+bin size by multiplying by ({\tt DM\_APP} / {\tt MAG\_BIN}).
+Therefore the magnitude bin edges in columns 1 and 
+3 will {\em not} be ``correct''. The bin centre (column 2) will be 
+correct -- the {\tt -bm} option merely causes scaling of the differential 
+number counts. The integral counts (``N'') are not affected by this option.
+
+Figures~2 and 3 show the output format for the number counts and colour 
+distributions and the verbose output ({\tt -v}) for the two component models. 
+The latter two are, of course, only printed out if the appropriate options 
+have been set. Figures~5 and 6 show the same things for the three component 
+model. The last three figures (7, 8 and 9) are plots (produced using the \sm\ 
+macros described in Appendix~B) of the results obtained using the default 
+parameters.
+
+The fields in the header section refer to the following (in the order you'll
+read them in the file -- note that {\tt rmin} appears three times in the 
+output -- it is possible that this parameter will be split into 3 (one for 
+disk, thick disk and spheroid)):
+%%--------------|
+\begin{tabbing}
+\rule{2cm}{0cm} \= \kill
+x0  \> The position of the field in arc minutes along the major axis. \\
+y0  \> The position of the field in arc minutes along the minor axis. \\
+far \> Was the integration was carried through to the far side of the disk? \\
+A   \> Field size in square degrees. \\
+D   \> The distance to the galaxy in parsecs. \\
+i   \> The inclination of the galaxy in degrees. \\
+r0  \> Distance to galactic centre (in pc). \\
+rpk \> Distance of peak of distribution from galactic plane (see \S 4.1) \\
+mabrt \> Brightest apparent magnitude at which to begin integration.\\
+madim \> Faintest apparent magnitude to carry integration down to.\\
+dm    \> Apparent magnitude interval. \\
+Mbin  \> Magnitude bin size for scaling differential counts. \\
+Mbri  \> Brightest absolute magnitude for all the \lf s. \\
+Mdim  \> Faintest absolute magnitude for all \lf s.\\
+dM    \> The absolute magnitude interval. \\
+mnbri \> The brightest magnitude for normalizing the \lf s.\\
+Cerr  \> The colour error (in magnitudes). \\
+Cint  \> Colour interval for calculation. \\
+Cbin  \> The colour bin size for scaling colour distribution. \\
+mndim \> The faintest magnitude for normalizing the \lf s.\\
+maxC  \> Maximum colour of the colour distribution.\\
+minC  \> Minimum colour of the colour distribution. \\
+mbc   \> Faint apparent magnitude limit for colour distribution. \\
+mfc   \> Bright apparent magnitude limit for colour distribution. \\
+amode \> The absorption model used. \\
+abs   \> Any arbitrary absorption included (e.g. from our Galaxy). \\
+dska  \> The absorption added by looking through the disk.\\
+a0    \> Scale height of the absorption. \\
+a1    \> Absorption at the Galactic poles in the ``cosec'' absorption law. \\
+a2    \> The $a_2$ parameter in the Sandage absorption law (\S4.2). \\
+a3    \> The $a_3$ parameter in the Sandage absorption law (\S4.2). \\
+den\_d \> The density normalization of the disk at rn\_d. \\
+rn\_d  \> The normalization radius for the disk \lf. \\
+psl\_d \> Scale length in the plane for the disk component (in pc). \\
+gsh\_d \> Scale height of the disk giants (in pc). \\
+dn\_d  \> Calculated disk normalization at r0. \\
+dr\_d  \> The distance increment for the disk integration. \\
+rmin   \> The minimum distance for integration. \\
+rmaxd  \> The maximum distance for integration in the disk component. \\
+dsklf  \> The disk luminosity function. \\
+dgcmd  \> The disk giant colour magnitude diagram. \\
+dmsfn  \> The main -- sequence colour magnitude diagram. \\
+fmsfn  \> File containing the fraction of stars on main -- sequence. \\
+den\_t \> The density normalization of the thick disk at rn\_t. \\
+rn\_t  \> The normalization radius for the thick disk \lf. \\
+psl\_t \> Scale length in the plane for the thick disk component (in pc). \\
+gsh\_t \> Scale height of the disk giants (in pc). \\
+dn\_t  \> Calculated thick disk normalization at r0. \\
+dr\_t  \> The distance increment for the thick disk integration. \\
+rmaxt  \> The maximum distance for integration in the thick disk. \\
+tsklf  \> The thick disk luminosity function. \\
+tgcmd  \> The thick disk giant colour magnitude diagram. \\
+den\_s \> The density normalization of the spheroid at rn\_s. \\
+rn\_s  \> The normalization radius for the spheroid \lf. \\
+rek    \> The de Vaucouleurs radius of the spheroid (in pc). \\
+es     \> The spheroid eccentricity/axis ratio. \\
+dn\_s  \> Calculated spheroid normalization at r0. \\
+dr\_s  \> The distance increment for the spheroid integration. \\
+rmaxs  \> The maximum distance for integration in the thick disk. \\
+sphlf  \> The spheroid luminosity function. \\
+sgcmd  \> The spheroid giant colour magnitude diagram. \\
+\end{tabbing}
+%%--------------|
+
+Additional information may be printed out at the end of the depending on
+what options were set on the command line. The format of these extra data
+blocks is one header line indicating the data type followed by two
+columns of numbers. 
+
+If ``verbose mode'' has been turned on (with the {\tt -v} option) 
+\egm\ will print out data concerning the various distribution functions
+that \egm\ has used in the model. They are not the same as the input files 
+that were specified in
+the parameter file. \egm\ uses spline interpolation on the input
+\lf s and \cmd s and stores the resulting look--up--table in an array.
+The  {\tt -v} option just tells \egm\ to print out these arrays.
+
+First of these data blocks is the disk luminosity function
+(header: DLF, format: magnitude  number),  then  the spheroid luminosity
+function  (SLF) (format: magnitude  number).  Following  that are
+three blocks  containing  the  colour-magnitude  diagrams  used:
+main  sequence (MSC),  disk giant (DGC) and then  spheroid giant
+(SGC) (format: magnitude colour). Finally the  fraction of stars
+on the  main sequence (FMS) (format: magnitude  number) is given.
+
+%%--------------|
+%% Figure     1 |
+%%--------------|
+\begin{figure}[p]
+\begin{center}
+\begin{verbatim}
+# EXTERNAL GALAXY MODEL: default.pm                          Components: 2 
+#    x0 =     23.740    y0 =      0.000     A =      0.00100
+#     D = 725000.000     i =     77.500   far =         NO  dska =      1.000
+# mabrt =     16.000 madim =     26.000    dm =      0.500  Mbin =      0.000
+#  Mbrd =     -6.000  Mbrs =     -3.000  Mdim =     16.500    dM =      0.050
+#  Cerr =      0.100  Cint =      0.005  Cbin =      0.200
+#  maxC =      3.000  minC =      0.000   mbc =     16.000   mfc =     26.000
+#    dr =     25.000    r0 =   5006.702 amode =    Sandage   abs =      0.000
+#    a0 =    100.000    a1 =      0.000    a2 =      0.165    a3 =      1.192
+#  dn_d =    500.000  dn_t =      0.000  dn_s =      1.000    rn =   8000.000
+#
+# DSK:
+# den_d =      1.723 psl_d =   5500.000 gsh_d =    250.000
+# dsklf = wielen.vlf                  dgcmd = dskm67.vbv              
+# dmsfn = NONE                        fmsfn = NONE                    
+#
+# SPH: R ^ (1/4)
+# den_s =  9.196e-03   rek =   2670.000    es =      0.800
+# sphlf = dacosta.vlf                   sgbfn = m13.vbv                 
+#
+#                     DSK           SPH            TOT
+# Stars in COL   = 41438.973       2090.437      43529.410
+# Mean Colours   =     1.196          0.839          1.179
+# Star Fraction  =     0.952          0.048
+# Giant Fraction =     1.000          1.000          1.000
+#
+\end{verbatim}
+\end{center}
+\caption{The header information for the two component (disk and spheroid)
+model. If the Caldwell \& Ostriker spheroid model has been used the 
+``{\tt SPH}'' entry will read {\tt C \& O} and {\tt rek} will be replaced by 
+{\tt rco}.}
+\end{figure}
+%%--------------|
+
+%%--------------|
+%% Figure     2 |
+%%--------------|
+\begin{figure}[p]
+\begin{center}
+\begin{verbatim}
+# NUM:
+# V1    V     V2    Ad(V)    Nd(<V2)    As(V)    Ns(<V2)    At(V)    Nt(<V2)
+16.50 16.75 17.00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00
+17.00 17.25 17.50 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00
+17.50 17.75 18.00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00
+18.00 18.25 18.50 6.381e-02 3.190e-02 0.000e+00 0.000e+00 6.381e-02 3.190e-02
+18.50 18.75 19.00 1.028e+00 5.460e-01 0.000e+00 0.000e+00 1.028e+00 5.460e-01
+					...
+23.00 23.25 23.50 1.891e+03 1.848e+03 7.318e+01 5.732e+01 1.964e+03 1.905e+03
+23.50 23.75 24.00 3.668e+03 3.682e+03 1.664e+02 1.405e+02 3.834e+03 3.822e+03
+24.00 24.25 24.50 6.864e+03 7.114e+03 3.129e+02 2.970e+02 7.177e+03 7.411e+03
+24.50 24.75 25.00 1.235e+04 1.329e+04 4.561e+02 5.250e+02 1.280e+04 1.381e+04
+25.00 25.25 25.50 2.127e+04 2.392e+04 7.708e+02 9.104e+02 2.204e+04 2.483e+04
+#
+# COL:
+#          B-V               Nd        Ns        NT
+ 0.0000  0.0025  0.0050     0.000     0.000     0.000
+ 0.0400  0.0425  0.0450     0.000     0.000     0.000
+ 0.0800  0.0825  0.0850     0.000     0.000     0.000
+ 0.1200  0.1225  0.1250     0.000     0.000     0.000
+ 0.1600  0.1625  0.1650     0.000     0.000     0.000
+					...
+ 2.8400  2.8425  2.8450     5.690     0.000     5.690
+ 2.8800  2.8825  2.8850     4.572     0.000     4.572
+ 2.9200  2.9225  2.9250     3.571     0.000     3.571
+ 2.9600  2.9625  2.9650     2.666     0.000     2.666
+ 3.0000  3.0025  3.0050     1.865     0.000     1.865
+\end{verbatim}
+\end{center}
+\caption{The format for the number counts and colour distribution for the 
+two component (disk and spheroid) model.}
+\end{figure}
+%%--------------|
+
+%%--------------|
+%% Figure     3 |
+%%--------------|
+\begin{figure}[p]
+\begin{center}
+\begin{verbatim}
+#
+# V     DLF       SLF       FMS
+-6.00  1.486e-08 2.645e-09 4.407e-01
+-5.95  1.614e-08 2.912e-09 4.408e-01
+-5.90  1.753e-08 3.206e-09 4.409e-01
+-5.85  1.904e-08 3.530e-09 4.410e-01
+-5.80  2.068e-08 3.886e-09 4.410e-01
+		...
+16.30  1.375e-02 1.375e-02 1.000e+00
+16.35  1.373e-02 1.373e-02 1.000e+00
+16.40  1.372e-02 1.372e-02 1.000e+00
+16.45  1.372e-02 1.372e-02 1.000e+00
+16.50  1.373e-02 1.373e-02 1.000e+00
+#
+# V     MSC       DGC        SGC
+-6.00 -3.450e-01 3.132e+00 2.768e+00
+-5.95 -3.441e-01 3.117e+00 2.753e+00
+-5.90 -3.433e-01 3.102e+00 2.737e+00
+-5.85 -3.424e-01 3.086e+00 2.722e+00
+-5.80 -3.415e-01 3.071e+00 2.706e+00
+		...
+16.30  2.006e+00 2.006e+00 1.846e+00
+16.35  2.012e+00 2.012e+00 1.852e+00
+16.40  2.019e+00 2.019e+00 1.859e+00
+16.45  2.025e+00 2.025e+00 1.865e+00
+16.50  2.031e+00 2.031e+00 1.871e+00
+\end{verbatim}
+\end{center}
+\caption{The information produced using verbose mode ({\tt -v}) for the two
+component (disk and spheroid) model. In this case the {\tt -MS} option had
+been used so the \fms\ and main-sequence \cmd\ files are displayed.}
+\end{figure}
+%%--------------|
+
+%%--------------|
+%% Figure     4 |
+%%--------------|
+\begin{figure}[p]
+\begin{center}
+\begin{verbatim}
+# EXTERNAL GALAXY MODEL: default.pm                       Components: 3 
+#    x0 =     23.740    y0 =      0.000     A =      0.00100
+#     D = 725000.000     i =     77.500   far =         NO  dska =      1.000
+# mabrt =     16.000 madim =     26.000    dm =      0.500  Mbin =      0.000
+#  Mbrd =     -6.000  Mbrs =     -3.000  Mdim =     16.500    dM =      0.050
+#  Cerr =      0.100  Cint =      0.005  Cbin =      0.200
+#  maxC =      3.000  minC =      0.000   mbc =     16.000   mfc =     26.000
+#    dr =     25.000    r0 =   5006.702 amode =    Sandage   abs =      0.000
+#    a0 =    100.000    a1 =      0.000    a2 =      0.165    a3 =      1.192
+#  dn_d =    500.000  dn_t =     10.000  dn_s =      1.000    rn =   8000.000
+#
+# DSK:
+# den_d =      1.723 psl_d =   5500.000 gsh_d =    250.000
+# dsklf = wielen.vlf                  dgcmd = dskm67.vbv              
+# dmsfn = NONE                        fmsfn = NONE                    
+#
+# THK:
+# den_t =  3.447e-02 psl_t =   5500.000 gsh_t =   1300.000
+# thklf = wielen.vlf                  tgbfn = dskm67.vbv              
+#
+# SPH: R ^ (1/4)
+# den_s =  9.196e-03   rek =   2670.000    es =      0.800
+# sphlf = dacosta.vlf                 sgbfn = m13.vbv                 
+#
+#                     DSK            THK           SPH            TOT
+# Stars in COL   = 41438.973       2556.082      2090.437      46085.492
+# Mean Colours   =     1.196          1.224         0.839          1.181
+# Star Fraction  =     0.899          0.055         0.045
+# Giant Fraction =     1.000          1.000         1.000          1.000
+#
+\end{verbatim}
+\end{center}
+\caption{The header information for the three component (disk, thick disk
+and spheroid) model. If the Caldwell \& Ostriker spheroid model has been used 
+the ``{\tt SPH}'' entry will read {\tt C \& O} and {\tt rek} will be replaced 
+by {\tt rco}.}
+\end{figure}
+%%--------------|
+
+%%--------------|
+%% Figure     5 |
+%%--------------|
+\begin{figure}[p]
+\begin{center}
+\begin{verbatim}
+# NUM:
+# V1    V     V2    Ad(V)    Nd(<V2)    At(V)    Nt(<V2)
+16.50 16.75 17.00 0.000e+00 0.000e+00 0.000e+00 0.000e+00
+17.00 17.25 17.50 0.000e+00 0.000e+00 0.000e+00 0.000e+00
+17.50 17.75 18.00 0.000e+00 0.000e+00 0.000e+00 0.000e+00
+18.00 18.25 18.50 6.381e-02 3.190e-02 1.320e-03 6.599e-04
+18.50 18.75 19.00 1.028e+00 5.460e-01 2.538e-02 1.335e-02
+					...
+23.00 23.25 23.50 1.891e+03 1.848e+03 1.111e+02 1.077e+02
+23.50 23.75 24.00 3.668e+03 3.682e+03 2.179e+02 2.166e+02
+24.00 24.25 24.50 6.864e+03 7.114e+03 4.129e+02 4.231e+02
+24.50 24.75 25.00 1.235e+04 1.329e+04 7.526e+02 7.994e+02
+25.00 25.25 25.50 2.127e+04 2.392e+04 1.315e+03 1.457e+03
+
+# V1    V     V2    As(V)    Ns(<V2)    AT(V)    NT(<V2)
+16.50 16.75 17.00 0.000e+00 0.000e+00 0.000e+00 0.000e+00
+17.00 17.25 17.50 0.000e+00 0.000e+00 0.000e+00 0.000e+00
+17.50 17.75 18.00 0.000e+00 0.000e+00 0.000e+00 0.000e+00
+18.00 18.25 18.50 0.000e+00 0.000e+00 6.513e-02 3.256e-02
+18.50 18.75 19.00 0.000e+00 0.000e+00 1.054e+00 5.594e-01
+					...
+23.00 23.25 23.50 7.318e+01 5.732e+01 2.075e+03 2.013e+03
+23.50 23.75 24.00 1.664e+02 1.405e+02 4.052e+03 4.039e+03
+24.00 24.25 24.50 3.129e+02 2.970e+02 7.590e+03 7.834e+03
+24.50 24.75 25.00 4.561e+02 5.250e+02 1.356e+04 1.461e+04
+25.00 25.25 25.50 7.708e+02 9.104e+02 2.336e+04 2.629e+04
+#
+# COL:
+#          B-V               Nd        Nt        Ns        NT
+ 0.0000  0.0025  0.0050     0.000     0.000     0.000     0.000
+ 0.0400  0.0425  0.0450     0.000     0.000     0.000     0.000
+ 0.0800  0.0825  0.0850     0.000     0.000     0.000     0.000
+ 0.1200  0.1225  0.1250     0.000     0.000     0.000     0.000
+ 0.1600  0.1625  0.1650     0.000     0.000     0.000     0.000
+			...
+ 2.8400  2.8425  2.8450     5.690     0.410     0.000     6.100
+ 2.8800  2.8825  2.8850     4.572     0.330     0.000     4.901
+ 2.9200  2.9225  2.9250     3.571     0.258     0.000     3.828
+ 2.9600  2.9625  2.9650     2.666     0.192     0.000     2.858
+ 3.0000  3.0025  3.0050     1.865     0.135     0.000     2.000
+\end{verbatim}
+\end{center}
+\caption{The format for the number counts and colour distribution for the 
+three component (disk, thick disk and spheroid) model.}
+\end{figure}
+%%--------------|
+
+%%--------------|
+%% Figure     6 |
+%%--------------|
+\begin{figure}[p]
+\begin{center}
+\begin{verbatim}
+#
+# V    DLF       TLF       SLF
+-6.00 1.486e-08 1.486e-08 2.645e-09
+-5.95 1.614e-08 1.614e-08 2.912e-09
+-5.90 1.753e-08 1.753e-08 3.206e-09
+-5.85 1.904e-08 1.904e-08 3.530e-09
+-5.80 2.068e-08 2.068e-08 3.886e-09
+...
+16.30 1.375e-02 1.375e-02 1.375e-02
+16.35 1.373e-02 1.373e-02 1.373e-02
+16.40 1.372e-02 1.372e-02 1.372e-02
+16.45 1.372e-02 1.372e-02 1.372e-02
+16.50 1.373e-02 1.373e-02 1.373e-02
+#
+# V    DGC       TGC       SGC
+-6.00 3.132e+00 3.132e+00 2.768e+00
+-5.95 3.117e+00 3.117e+00 2.753e+00
+-5.90 3.102e+00 3.102e+00 2.737e+00
+-5.85 3.086e+00 3.086e+00 2.722e+00
+-5.80 3.071e+00 3.071e+00 2.706e+00
+...
+16.30 -6.167e+02 -6.167e+02 -1.818e+01
+16.35 -6.243e+02 -6.243e+02 -1.846e+01
+16.40 -6.319e+02 -6.319e+02 -1.873e+01
+16.45 -6.397e+02 -6.397e+02 -1.901e+01
+16.50 -6.474e+02 -6.474e+02 -1.929e+01
+\end{verbatim}
+\end{center}
+\caption{The information produced using the {\tt -v} option for the three 
+component (disk, thick disk and spheroid) model. The main sequence was not
+included.}
+\end{figure}
+%%--------------|
+
+%%--------------|
+%% Figure     7 |
+%%--------------|
+\begin{figure}[p]
+\centerline{\psfig{figure=figure7.eps}}
+\caption{The differential number counts for the default model.}
+\end{figure}
+
+%%--------------|
+%% Figure     8 |
+%%--------------|
+\begin{figure}[p]
+\centerline{\psfig{figure=figure8.eps}}
+\caption{The integral number counts for the default model.}
+\end{figure}
+
+%%--------------|
+%% Figure     9 |
+%%--------------|
+\begin{figure}[p]
+\centerline{\psfig{figure=figure9.eps}}
+\caption{The colour distribution produced by the default model.}
+\end{figure}
+%%--------------|
+
+%%----------------------------------------------------------------------------|
+%% MODEL DESCRIPTION                                                          |
+%%----------------------------------------------------------------------------|
+
+\newpage
+\section{Model Description}
+
+%%------------------------------------|
+\subsection{Geometrical Considerations}
+
+In order to use \egm\ properly it is necessary to know what the parameters
+describing positions and angles actually refer to. The first step is to
+convert the Right Ascension and Declination of a field to rectangular
+coordinates, as shown in figure~10. The $x$ and $y$ axes are defined to
+be along the major and minor axes of the galaxy. The $x$-axis is inclined
+to the R.A. axis by the position angle $P$. It is a simple task to transform
+the coordinates of G from $(\alpha,\delta)$ to $(x,y)$:
+\[
+x = \alpha \cos P - \delta \sin P 
+\]
+\[
+y = \alpha \sin P + \delta \cos P
+\]
+%%--------------|
+%% Figure    10 |
+%%--------------|
+\begin{figure}[b]
+\centerline{\psfig{figure=figure10.eps,height=8cm}}
+\caption{Converting the R.A. and Dec. of the field at G to {\sf x} and
+{\sf y} coordinates. These are defined to lie along the major and minor
+axes of the galaxy, respectively.}
+\end{figure}
+
+\egm\ calculates the number counts using a variation of the Bahcall \&
+Soneira Model. In practice this means imagining that the observer is at
+the field (G, in figure~10) and calculating the counts back along the line
+of sight to the observer. This requires the ``galactic latitude and
+longitude'' of the observer as seen from G. Figures~11 and 12 show the
+geometry of the situation. In figure~12 an observer at O looks at a field P
+in a galaxy whose plane (G) is inclined at am angle $i$ to the plane of the
+sky (S). The angle $b$ is the ``galactic latitude'' of O as seen from P.
+Provided $D >> x$ then $d \approx D$ and $e \approx 0$. Thus we may assume
+that $b = 90^\circ - i $. For the inclination and distance of M31 and a field
+where $x = 55 {\rm Kpc}$ this is true to within 0.5\%.
+%%--------------|
+%% Figure    11 |
+%%--------------|
+\begin{figure}[p]
+\centerline{\psfig{figure=figure11.eps,width=16cm,angle=-90}}
+\caption{A simplified view of the geometry of the situation. The plane of
+the galaxy (G) is inclined at an angle $i$ to the plane of the sky (S)
+(as seen from O). Assuming $ x << D$ we have $b = 90^\circ - i$.}
+\end{figure}
+%%--------------|
+%%--------------|
+%% Figure    12 |
+%%--------------|
+\begin{figure}[p]
+\centerline{\psfig{figure=figure12.eps,width=16cm}}
+\caption{As seen by the observer the field Q on the sky projects to P in the
+galaxy. $r$ and $l$ can be found by geometrical analysis.}
+\end{figure}
+%%--------------|
+
+The model now needs to know r, the distance of the field P from the
+centre of the galaxy, and $\ell$ the ``galactic longitude''. Figure~12 shows
+the geometry in this case. It is necessary to define a coordinate
+system on the plane of the sky -- x and y in the figure. The x-axis is
+defined to lie along the line of nodes of the intersection of the galaxy
+with the plane of the sky. So we give the model the (x,y) coordinates of the
+field Q (on the sky, which projects to P in the galaxy). Then
+\[
+r = \rho \left( \cos^2 \phi + \sec^2 i \sin^2 \phi \right) ^ {\frac{1}{2}},
+\]
+\[
+\theta = \arctan \left( \frac{\tan \phi}{\sec i} \right),
+\]
+\[
+\ell = 90^\circ - \theta.
+\]
+
+%%--------------------------|
+\subsection{Component Models}
+
+There are currently only two types of components in \egm\ -- the thin, 
+exponential
+disk and the spheroidal halo. The thick disk is functionally equivalent to
+the thin disk model. The functional forms discussed below have been
+hard--coded into the program and cannot be changed without rewriting the
+appropriate subroutines. The parameters in these functional forms can,
+of course, be set by the user.
+
+%%----------------------|
+\subsubsection*{The Disk}
+
+The density  distribution of  the disk stars in the Bahcall and  Soneira
+model is represented by the following exponential function:
+\[ 
+\rho_d(r,M) = e^{\left[\frac{-z}{H} - \frac{x-R_0}{h} \right]}
+\] 
+where the $H$ scale height of the disk and $h$ is the scale length. 
+$R_0$ is the distance of the field from the galactic centre (in pc).
+ 
+%%--------------------------|
+\subsubsection*{The Spheroid}
+
+de Vaucouleurs (1959,  in  Handbuch  der Physik, Vol. 53,  ed. S. Flugge
+(Berlin, Springer--Verlag), p. 311) found  that the projected  brightness
+distribution of ellipticals was given by the famous $r^\frac{1}{4}$ law:
+\[
+\log \frac{I(r)}{I(r_e)} = -3.3307 \left( \left(\frac{r}{r_e}\right)^
+{\frac{1}{4}} - 1 \right)
+\]
+where  $r_e$  is the spatial distance that  projects to an angle containing
+half the total luminosity. Young (1976, AJ, 81, 807) gives an asymptotic
+approximation for the spatial density of stars  which leads to this form
+of projection:
+\[
+\rho_s(r) \approx \frac{e^{-b\left(\frac{r}{r_e}\right)}}
+{2\left(\frac{r}{r_e}\right)^3}
+\left( \frac{\pi}{8 b \left(\frac{r}{r_e}\right)} \right)^{\frac{1}{2}}
+\]
+where $b = 7.6692$.
+
+%%------------------------|
+\subsubsection*{Absorption}
+
+Three different models for galactic absorption are currently supported -- no
+absorption, the ``cosec'' law and the Sandage absorption law, the latter being
+the default model. The absorption model can be specified on the command line
+(the {\tt -a} option) or in the parameter file with the keyword {\tt AMODE}. 
+In both cases the words ``none'', ``cosec'' and ``Sandage'' can be used to 
+choose the desired model. Only the first letter of the word (which may be 
+in upper or lower case) is significant.
+
+Each absorption mode needs various parameters (except the no absorption
+case!). The cosecant law calculates absorption based on the formula
+\[
+A(b) = a_1(90^\circ) \csc b
+\]
+where $a_1(90^\circ) = 0.15$ magnitudes in $V$ (the default) and 
+$A_V = 0.75 A_B$. This coefficient can be specified in the parameter file
+with the {\tt A\_1} keyword. You will have to decide on the value of this 
+parameter for other filters on your own.
+
+The Sandage absorption model (Sandage, 1972, ApJ, 178, 1) in the $V$ band is
+\[
+\begin{array}{lll}
+A(b) = & a_2 ( a_3 - \tan b) \csc b & |b| \leq 50^\circ \\
+A(b) = & 0 & |b| > 50^\circ
+\end{array}
+\]
+where for the $V$ filter $a_2 = 0.165$ and $a_3 = 1.192$. In the $B$ filter
+$A_B = 1.33 A_V$. To the best of my knowledge this formula is only defined
+for the $V$ and $B$ filters. The parameters $a_2$ and $a_3$ can be 
+reset in the parameter file with the {\tt A\_2} and {\tt A\_3} keywords 
+respectively.
+
+Finally the absorption in magnitudes at distance $R$ is calculated from
+\[
+A(R) = A(b) \left[ 1 - e^{(- \sin b / a_0) R} \right]
+\]
+where $a_0$ is the scale height of the absorbing material. The default is
+100 pc, and the appropriate keyword is {\tt A\_0}. It is assumed there is no
+variation with distance from the galactic centre, only an exponential
+variation perpendicular to the plane.
+
+Two other absorption parameters may be defined. The first is simply a 
+number (in magnitudes) added to the calculations (use the {\tt ABS} keyword 
+or the {\tt -A} option) -- this may simulate absorption in our Galaxy. The
+second (using the {\tt DSK\_ABS} keyword) only applies if the {\tt FAR\_SIDE} 
+option is set -- this number is added to all calculations that occur of the 
+far side of the disk. This simulates looking through a thin dust layer in the 
+plane of the galaxy.
+
+%%-----------------------------------|
+\subsubsection*{Density Normalization}
+
+One item of program input that needs careful consideration is the density
+normalization to choose for the disk, thick disk and spheroid components.
+This is done with the {\tt -dnd}, {\tt -dnt} and {\tt -dns} options on the 
+command line or the corresponding {\tt DND}, {\tt DNT} and {\tt DNS}
+parameters. The format is: {\tt density@radius} where {\tt density} is the 
+density on stars per cubic parsec at a distance of {\tt radius} (in the 
+plane of the galaxy). 
+
+The \lf\ is then normalized to {\tt density} stars per cubic parsec, between
+the magnitudes given by the {\tt MN\_BRI} and {\tt MN\_DIM} parameters.
+
+The distance $r_0$ of the field from the centre of the
+galaxy is then calculated and the actual density normalizations at that point
+are found by re--scaling from {\tt radius}. For example, the default field is 
+at 5006.702 pc from the centre of the galaxy which gives a disk density of 1.723 and a spheroid density of \sci{9.196}{-3}. 
+
+%%----------------------------------------------------------------------------|
+\subsection{Distribution Functions}
+
+%%----------------------------------|
+\subsubsection*{Luminosity Functions}
+
+In this release of \egm, three files are given for the luminosity function
+of the disk (``analytic.vlf'', ``wielen.vlf'', and ``dacosta.vlf''). 
+The first of these, the pure analytic \lf, is given by equation (1) of 
+Bahcall and Soneira 1980 (ApJS, 44, 73):
+\[
+\begin{array}{lll}
+\phi(M) = & \frac{n_\ast 10^{\beta(M-M_\ast)}}
+{\left( 1 + 10^{-(\alpha - \beta)\delta(M-M_\ast)}\right)^{\frac{1}{\delta}}}
+& M_b \leq M \leq M_c \nonumber \\
+\phi(M) = & \phi(M_c) & M_c \leq M \leq M_d  \\
+\phi(M) = & 0 & M \leq M_b {\rm ~or~~} M \geq M_d
+\end{array}
+\]
+where, for the $V$ band, $n_\ast = 4.03 \times 10^{-3}$, $M_\ast = +1.28$, 
+$\alpha = 0.74$, $\beta = 0.04$, $\frac{1}{\delta} = 3.40$, $M_b = -6$, 
+$M_c = +15$ and $M_d = +19$.
+ 
+This has been modified to include the ``Wielen dip'' (Wielen, 1974, in
+Highlights of Astronomy, Vol. 3, ed. G. Contopoulos (Dordrecht, Reidel), 
+p. 365) in the file ``wielen.vlf'' and further modified to include the so--
+called ``globular  cluster feature''  (DaCosta, 1982, AJ, 87, 990) in  the
+file ``dacosta.vlf''. As discussed in Bahcall and Soneira (1980)  these can
+probably be used for the spheroid \lf\ without too much of a problem.
+
+%%----------------------------------------|
+\subsubsection*{Colour--Magnitude Diagrams}
+
+\egm\ uses \cmd s only to calculate the expected colour distribution of the
+field in question. Thus if you are interested in say, number counts in $I$
+but have no $V-I$ \cmd, you could run \egm\ with an $I$ band \lf\ and ignore 
+the colour distribution that \egm\ produces.
+
+Several \cmd s are provided with \egm\ in the standard library. The $B-V$ ones
+come mainly from the functions supplied with the FORTRAN version of the
+Bahcall \& Soneira code. The $V-I$ are take from Da~Costa \& Armandroff 
+(1990, AJ, 100, 162)
+
+%%----------------------------------------|
+\subsubsection*{Fraction of stars on the main--sequence}
+If the {\tt -MS} option has been set \egm\ needs to know the fraction of
+stars on the main sequence as a function of absolute magnitude. This is
+so it can weight the giant branch and main sequence number counts
+accordingly. Mamon \& Soneira, 1982 (ApJ, 255, 181) give the following
+analytical form for the number of stars on the main sequence:
+\[
+\begin{array}{lll}
+f(M) = & C e^{\alpha(M+\beta)^{\gamma}} & M < M_a \\
+f(M) = & 1 & M \geq M_a
+\end{array}
+\]
+where for the $V$ band, $C=0.44$, $\alpha = 1.5\times10^{-4}$, $\beta=8.0$,
+$\gamma=3.5$ and $M_a = 3.7$. 
+
+%%----------------------------------------------------------------------------|
+\subsection{Program Function Details}
+
+This section describes how \egm\ produces a model. It is reasonably 
+detailed and is {\em not} required reading. In some cases it refers to 
+what the computer is actually doing, so if you're really interested
+you may want to have a copy of the source code close at hand.
+The discussion also assumes that all the files \egm\ needs are available
+and that it won't crash!
+
+\subsubsection*{Initialization}
+The first thing \egm\ does is initialize all the parameters to default
+values. Then it scans the command line for the name of the parameter file and
+reads it one line at a time. Each line is parsed for a keyword and this
+is checked against and internal list of valid keywords.
+If it comes across an invalid keyword it will stop,
+otherwise it will overwrite the default value of that parameter with the
+value in the parameter file. 
+
+It then scans the command line for options and updates the appropriate 
+parameters, checking for invalid options and overwriting the appropriate
+parameter values. Command line options are scanned last and will therefore
+overwrite values given in the parameter file.
+
+Next \egm\ initializes various look-up-tables (LUTs) that it needs. These are
+arrays for the \lf, \cmd\ (and \fms\, if required) data. From 
+it's parameters it determines the size of each array needed and reads in 
+the corresponding data file. It performs
+spline interpolation on this data to fill in the array. Several arrays are
+needed -- one each for the disk and spheroid \lf s, two for the disk giant 
+and spheroid giant color magnitude diagrams and possibly two for the main
+sequence \cmd\ and for the \fms\ data. Corresponding arrays will be needed for 
+the thick disk if it is to be included. Other arrays used to hold the results 
+of the integration (number counts and colour distribution) are also set up at 
+this time but are merely initialized to zero.
+
+\subsubsection*{Integration Procedure}
+\egm\ now calculates the ``projection'' parameters -- the effective
+galactic latitude and longitude based on the input parameters as described
+in section 4.1.
+
+\egm\ begins with the disk component. Starting at R\_MIN it moves along the 
+line of sight in steps of DR. It then calculates the size of the volume 
+element, its distance from the observer (not from the galaxy) and the 
+absorption (if any). The distances of the element above and along the plane
+of the galaxy are calculated to enable the density at that point to be found.
+
+The program then steps through the range of absolute magnitudes (defined
+by M\_DIM and M\_BRI). For each of these steps it calculates the apparent
+magnitude -- if this is outside the desired range (MA\_DIM and MA\_BRT)
+it procedes to the next step, otherwise it looks up the number of
+stars at that absolute magnitude in the disk luminosity function LUT.
+If the main-sequence is being included the fraction of stars on the
+giant branch and main-sequence are found using the \fms\ LUT.
+The number of stars is then found by multiplying
+together the volume, the \lf\ at that (absolute) magnitude, the
+\fms\ value and the density distrbution, evaluated at that position.
+
+The effect on the colour distribution is found by looking up the colour
+corresponding to that absolute magnitude on the \cmd\ LUTs. The count
+for that particular colour is filled in and various other running totals
+(for the mean colour etc.) are computed.
+
+The program then loops back for the next magnitude step in the \lf.
+When that loop is finished it proceeds to the next distance step and so on.
+Integration is terminated when all loops have been finished or when
+the following condition is met. The total counts accumulated over the
+\lf\ loop are compared to the running grand total of counts. If this 
+sub-total is less than C\_FAC times the grand total then an insignificant
+amount of stars are being added and the integration stops.
+
+The calculation of the spheroid counts proceeds in pretty much the same way,
+except for one slight difference. The spheroid generally extends much farther
+than the disk, therefore because of the larger numbers involved the
+distance steps are done in logarithmic intervals to speed up the calculation.
+Tests have shown that this does not introduce any appreciable difference to
+calculating in linear steps.
+
+The calculations for the far side of the galaxy proceed in an identical
+manner, except for the inclusion of extra absorption and the fact that as
+distances from the galaxy increase, so do the distances from the observer.
+
+After this all that remains is some ``tidying up''. The computed colour
+distribution is convolved with a Gaussian error distribution to obtain the 
+predicted colour distribution. Various other ``colour'' statistics are also
+worked out. The total of the number counts are found, as is the integral
+number counts for each component.
+The results are then written out on the standard output stream.
+
+\end{document}

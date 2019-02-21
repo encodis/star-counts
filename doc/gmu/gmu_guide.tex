@@ -1,0 +1,795 @@
+%%----------------------------------------------------------------------------|
+%% GMU USERS GUIDE                                                            |
+%%                                                                            |
+%% P. J. C. Hodder                                                            |
+%%----------------------------------------------------------------------------|
+
+\documentclass[11pt,twoside]{article}
+\input{gmu_macros.tex}
+
+\begin{document}  
+
+%%----------------------------------------------------------------------------|
+%% TITLE PAGE                                                                 |
+%%----------------------------------------------------------------------------|
+
+\thispagestyle{empty}
+\noindent
+\framebox[16cm]{\parbox{16cm}{
+{\begin{center}
+\huge \bf 
+A Users Guide to the 
+
+\rule{0mm}{10mm}
+
+A Galaxy Model Utilities
+
+\rule{0mm}{10mm}
+
+Version 1.2
+
+\end{center}}}}
+
+\rule{0mm}{10mm}
+
+\noindent
+\framebox[16cm]{\parbox{16cm}{
+{\begin{center}
+\large \bf
+Contents
+\end{center}}
+\large
+\begin{tabbing}
+\rule{2cm}{0cm} \= \rule{1cm}{0cm} \= \kill
+\> 1  \> Introduction \\ \\
+\> 2  \> A Brief Review of the GMU \\ \\
+\> 3  \> Make Analytic LFs: mkalf \\ \\
+\> 4  \> Make New CMDs: mkcmd \\ \\
+\> 5  \> Fraction of Stars: mkfms \\ \\
+\> 6  \> LFs from MLRs: mkmlf \\ \\
+\> 7  \> Normalize LFs: mknlf \\ \\
+\> 8  \> Spline Fitting: mkspl \\ \\
+\> 9  \> Make Linear LFs: mkxlf \\ \\
+\> 10 \> Comparing to data: egmcmp \\ \\
+\> 11 \> Adding it up: addegm \\ \\
+\> A \> Installing the GMU \\ \\
+\end{tabbing}
+}}
+
+%%----------------------------------------------------------------------------|
+%% INTRODUCTION                                                               |
+%%----------------------------------------------------------------------------|
+
+\newpage
+\setcounter{page}{1}
+\section{Introduction}
+
+This document describes the installation and use of a collection of software
+tools known as the Galaxy Model Utilities (or \gmu\ for short). They are 
+designed to operate in concert with the {\sc bsm} (Bahcall -- Soneira Model)
+and {\sc egm} (External Galaxy Model) programs. To function properly these 
+two programs require luminosity functions (\lf s) and colour--magnitude
+diagrams (\cmd s) as input data. The \gmu\ aid in the construction and 
+preparation of these files.
+
+%%----------------------------------------------------------------------------|
+%% A BRIEF REVIEW                                                             |
+%%----------------------------------------------------------------------------|
+
+\section{A Brief Review}
+
+The \gmu\ are relatively simple to learn -- each of the 9 programs basically
+does one thing only, thus drastically reducing the number of command line 
+options. In fact for several of the \gmu\ there is only one way to use the
+program! In most cases the \gmu\ operate on and produce data in two column 
+ASCII format. The first column is usually the magnitude; the second is either 
+a number or a colour (depending on the program). The columns must be separated 
+by spaces, not commas. Any line beginning with a ``\#'' is considered a comment
+and is skipped on input. The majority of the \gmu\ act as filters -- the 
+filename can be entered on the command line or the standard input stream can be
+piped to the program. All output is to ``standard out'' so the output must 
+be redirected to a file or piped to another program. All the \gmu\ (except
+\mkspl , \addegm , and \egmcmp\ write out a comment line first -- the contents
+of this comment is the command line used to generate that output. This may help
+you keep track of ``who created what''!
+
+In the descriptions below an option in brackets ({\tt []}) is optional and may
+be left out. Two options separated by a ``{\tt |}'' indicates that either one
+or the other may be used.
+
+Many of these utilities perform spline fits to the data for purposes of 
+interpolation. Thus the input data must be monotonic increasing (the first
+column, that is).
+
+A short help for all the \gmu\ can be obtained by typing the program's name
+with no arguments. All the programs return an error level of 0 upon successful
+completion and 1 upon failure (of any sort).
+
+\vspace{10mm}
+\centerline{DISCLAIMER}
+\nin As far as I know these programs work as described in this manual. They are
+provided ``as is'' with no warranty or money back guarantee. If they don't
+work for you then that's the way it is. Accept the fact that the Universe hates
+you. Note, however, that the author can be bribed with cookies, money, fast 
+cars and loose women to fix problems as they arise. 
+
+\vspace{10mm}
+\nin Any resemblance of these programs to any real science, programming 
+ability or general usefulness is purely coincidental. 
+
+%%----------------------------------------------------------------------------|
+%% PROGRAM DESCRIPTIONS                                                       |
+%%----------------------------------------------------------------------------|
+
+%%----------------------------------------------------------------------------|
+%% MKALF                                                                      |
+%%----------------------------------------------------------------------------|
+
+\newpage
+\section{The \mkalf\ Utility}
+
+\mkalf\ is an acronym for ``MaKe Analytic Luminosity Function''. The analytic
+form is given in Bahcall \& Soneira (1980, ApJS, 44, 73) as shown below:
+\[
+\begin{array}{lll}
+\phi(M) = & \frac{n_\ast 10^{\beta(M-M_\ast)}}
+{\left( 1 + 10^{-(\alpha - \beta)\delta(M-M_\ast)}\right)^{\frac{1}{\delta}}}
+& M_b \leq M \leq M_c \nonumber \\
+\phi(M) = & \phi(M_c) & M_c \leq M \leq M_d  \\
+\phi(M) = & 0 & M \leq M_b {\rm ~or~~} M \geq M_d
+\end{array}
+\]
+
+Values of these parameters for the six default filters are:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{clllllllll}
+  & $n_\ast$ & $M_\ast$ & $\alpha$ & $\beta$ & $\frac{1}{\delta}$ & $M_b$ & $M_c$& $M_d$ & $N(M_c)$ \\ \hline
+B & 0.00255 & 2.20 & 0.6   & 0.05  & 2.3  & -6.0 & +15.0 & +18.0 & 1.0 \\ 
+V & 0.00403 & 1.28 & 0.74  & 0.04  & 3.40 & -6.0 & +15.0 & +19.0 & 0.01414 \\
+R & 0.00480 & 1.40 & 0.74  & 0.045 & 3.0  & -6.0 & +14.0 & +13.0 & 1.0 \\
+I & 0.0175  & 0.85 & 0.81  & 0.01  & 5.20 & -6.0 & +14.0 & +11.0 & 1.0 \\
+J & 0.0250  & 0.6  & 0.8   & 0.01  & 5.65 & -5.0 & +11.0 & +10.0 & 1.0 \\
+K & 0.0290  & 2.0  & 0.625 & 0.01  & 4.0  & -5.0 & +9.0  & +9.0  & 1.0 \\ 
+\hline
+\end{tabular}
+\end{table}
+
+%%----------------------------------------------------------------------------|
+\subsection*{Usage}
+
+\begin{verbatim}
+mkalf filter|file bright faint delta
+\end{verbatim}
+
+\nin
+The order of the command line arguments cannot be changed. They refer to:
+\medskip
+
+\begin{clo}{filter|file}
+This specifies the band in which the \lf\ is to be constructed. The bands 
+currently supported are $B$, $V$, $R$, $I$, $J$, and $K$. If the argument is 
+not one of these then \mkalf\ will try to read the parameters from a file.
+\end{clo}
+
+\begin{clo}{bright}
+The brightest absolute magnitude for output. Magnitudes brighter than $M_b$ are
+not printed.
+\end{clo}
+
+\begin{clo}{faint}
+The faintest absolute magnitude for output. Magnitudes fainter than $M_d$ are
+not printed.
+\end{clo}
+
+\begin{clo}{delta}
+The absolute magnitude interval for output.
+\end{clo}
+
+%%----------------------------------------------------------------------------|
+\subsection*{Notes}
+
+There are six bands pre-programmed into \mkalf : $B$, $V$, $R$, $I$, $J$,
+and $K$. The band name is case sensitive -- $v$ is not the same as $V$. If the 
+``filter'' is not one of these letters then the program will try to find a 
+file of that name, and use data in this file to get the correct parameters for 
+the analytic expression. (This means that a file called ``V'' will not be 
+read, of course.) The format of this one line file is just nine, whitespace
+separated floating point numbers:
+
+\begin{tabbing}
+\rule{1cm}{0cm} \= \rule{1cm}{0cm} \= \rule{1cm}{0cm} \= \rule{1cm}{0cm} \= \rule{1cm}{0cm} \= \rule{1cm}{0cm} \= \rule{1cm}{0cm} \= \rule{1cm}{0cm} \= \rule{1cm}{0cm} \= \kill
+$n_\star$ \> $M_\star$ \> $\alpha$ \> $\beta$ \> $\frac{1}{\delta}$ 
+\> $M_b$ \> $M_c$ \> $M_d$ \> $N(M_c)$
+\end{tabbing}
+
+The output is printed on the standard output -- redirection to a file is 
+recommended. The data produced by \mkalf\ is, of course, compatible with 
+{\sc bsm} and {\sc egm} (two column format, the first being magnitude, the
+second being the $\log_{10}$ of the number at that magnitude.
+
+%%----------------------------------------------------------------------------|
+%% MKCMD                                                                      |
+%%----------------------------------------------------------------------------|
+
+\newpage
+\section{The \mkcmd\ Utility}
+
+\mkcmd\ is a tool to aid in the production of \cmd s. The functionality is 
+fairly simple, and could probably be accomplished with {\tt awk} or {\tt perl}
+scripts, but it is included in the package for completeness. There are two
+principle modes of operation. The first merely adds a colour excess to the
+colours in the input \cmd. The output is then the shifted \cmd. The second 
+requires two \cmd s, one for the M-S, the other for the RGB, and the turn--off
+magnitude (and optionally a colour excess to be added). The output is the
+RGB \cmd\ above the turn--off magnitude, and the MS \cmd\ below that. If 
+present the colour excess is added.
+
+%%----------------------------------------------------------------------------|
+\subsection*{Usage}
+
+\begin{verbatim}
+mkcmd ce cmd
+
+mkcmd to [ce] mscmd gbcmd
+\end{verbatim}
+
+\nin
+The order of the command line arguments cannot be changed. They refer to:
+\medskip
+
+\begin{clo}{to}
+The magnitude of the turn off.
+\end{clo}
+
+\begin{clo}{ce}
+The colour excess (or blueshift).
+\end{clo}
+
+\begin{clo}{cmd, mscmd, gbcmd}
+Files containing \cmd s -- in the first case any \cmd\ can be specified. In 
+the second the order is important (MS first, RGB second).
+\end{clo}
+
+%%----------------------------------------------------------------------------|
+\subsection*{Notes}
+
+\mkcmd\ works on standard {\sc bsm} and {\sc egm} \cmd\ files (two column
+format, magnitude and colour) and outputs data in the same format. \mkcmd\
+replaces part od the functionality that was built into {\sc bsm}: in the
+second mode of operation the output \cmd\ is a combination of of the M-S
+and RGB \cmd s. For magnitudes brighter than the turn--off the RGB \cmd\ is
+used. Fainter than this the M-S \cmd\ is used. The limits on the output \cmd\
+are the brightest and faintest magnitudes of the two input \cmd s. The 
+magnitude interval is the difference between the first and second magnitudes
+of the M-S \cmd. You may want to run the input magnitudes through \mkspl\ if
+this is a bad choice.
+
+%%----------------------------------------------------------------------------|
+%% MKFMS                                                                      |
+%%----------------------------------------------------------------------------|
+
+\newpage
+\section{The \mkfms\ Utility}
+
+\mkfms\ makes a file containing the run of fraction of stars on the main
+sequence as a function of absolute magnitude. It is calculated according
+to the equation:
+\[
+\begin{array}{lll}
+f(M) = & C e^{\alpha(M+\beta)^{\gamma}} & M < M_a \\
+f(M) = & 1 & M \geq M_a
+\end{array}
+\]
+
+Values of these parameters for the six default filters are:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{clllll}
+  & $C$    & $\alpha$ & $\beta$ & $\gamma$ & $M_a$ \\ \hline
+B & 0.53   & 2.4e-31  & 75.0    & 16.0     & 4.6 \\
+V & 0.44   & 1.5e-4   & 8.0     & 3.5      & 3.7 \\
+R & 0.31   & 6.5e-4   & 7.5     & 3.2      & 2.9 \\
+I & 0.08   & 0.37     & 4.4     & 1.0      & 2.4 \\
+J & 0.0069 & 2.0      & 4.0     & 0.5      & 2.2 \\
+K & 0.0047 & 2.5      & 3.0     & 0.5      & 1.6 \\ \hline
+\end{tabular}
+\end{table}
+
+%%----------------------------------------------------------------------------|
+\subsection*{Usage}
+
+\begin{verbatim}
+mkfms filter|file bright faint delta
+\end{verbatim}
+
+\nin
+The order of the command line arguments cannot be changed. They refer to:
+\medskip
+
+\begin{clo}{filter}
+This argument specifies the filter for which the \fms\
+file is to be made. The filters currently supported are $B$, $V$, $R$, $I$, $J$
+and $K$. If the argument is not one of these then \mkfms\ will try to read the
+parameters from a file.
+\end{clo}
+
+\begin{clo}{bright}
+The brightest absolute magnitude for calculation. The default is --7.0.
+\end{clo}
+
+\begin{clo}{faint}
+The faintest absolute magnitude for calculation. The default is 17.0.
+\end{clo}
+
+\begin{clo}{delta}
+The absolute magnitude interval for calculation. The default is 0.5.
+\end{clo}
+
+%%----------------------------------------------------------------------------|
+\subsection*{Notes}
+
+\mkfms\ has parameters for six filters built in $B$, $V$, $R$, $I$, $J$
+and $K$. The band name is case sensitive -- $v$ is not the same as $V$. If the
+``filter'' is not one of these then \mkfms\ will assume it it a file name and 
+will try to read it to get the parameters. The format of this one line file is
+just five, whitespace separated floating point numbers:
+
+\begin{tabbing}
+\rule{1cm}{0cm} \= \rule{1cm}{0cm} \= \rule{1cm}{0cm} \= \rule{1cm}{0cm} \= \rule{1cm}{0cm} \kill
+$C$ \> $\alpha$ \> $\beta$ \> $\gamma$ \> $M_a$ 
+\end{tabbing}
+
+The output is printed on the standard output so redirection may be required.
+The format of the output is a standard \lf\ compatible with the other \gmu\
+tools and with {\sc bsm} and {\sc egm}.
+
+%%----------------------------------------------------------------------------|
+%% MKMLF                                                                      |
+%%----------------------------------------------------------------------------|
+
+\newpage
+\section{The \mkmlf\ Utility}
+
+\mkmlf\ is another program to make luminosity functions -- this time from
+a given mass function. \mkmlf\ assumes a power law mass function of the form
+\[
+n({\cal M}) = A {\cal M}^{-(1+x)}
+\]
+where the normalization $A$ and slope $x$ are given on the command line or
+by default values. A mass -- luminosity relation must also be specified (or
+redirected to standard input).
+
+%%----------------------------------------------------------------------------|
+\subsection*{Usage}
+
+\begin{verbatim}
+mkmlf x a bright faint del [mlr]
+\end{verbatim}
+
+\nin
+The order of the command line arguments cannot be changed. They refer to:
+\medskip
+
+\begin{clo}{x}
+The slope of the mass function in the above equation.
+\end{clo}
+
+\begin{clo}{a}
+The normalization factor for the mass function. Use a value of 1.0 if you 
+know what normalization is required -- the \mknlf\ utility can be used to 
+re--normalize the \lf.
+\end{clo}
+
+\begin{clo}{bright}
+The brightest absolute magnitude for output.
+\end{clo}
+
+\begin{clo}{faint}
+The faintest absolute magnitude for output.
+\end{clo}
+
+\begin{clo}{delta}
+The absolute magnitude interval for output.
+\end{clo}
+
+\begin{clo}{mlr}
+This is the mass--luminosity relation to be used. If it is not given \mkmlf\
+will try to read from standard input.
+\end{clo}
+
+%%----------------------------------------------------------------------------|
+\subsection*{Notes}
+
+The \mlr\ is considered to be undefined for values outside the limits of the
+\mlr\ file -- that is, no extrapolation is performed. This means that the
+default values for the mass range are set by the \mlr\ file itself, and that
+masses beyond this range are not used.
+
+\mkmlf\ reads the \mlr\ in the form of a file. Again a two column, space
+separated format is used: the first column is the absolute magnitude; the
+second is the mass. The output is in the same format as other \lf s and 
+appears on the standard output stream.
+
+%%----------------------------------------------------------------------------|
+%% MKNLF                                                                      |
+%%----------------------------------------------------------------------------|
+
+\newpage
+\section{The \mknlf\ Utility}
+
+This utility is used to normalize luminosity functions. The files must be in 
+the format used by {\sc bsm}, {\sc egm} and all the other utilities. 
+\mknlf\ uses an extended form of Simpson's Rule to integrate the input \lf. 
+It then adjusts this \lf\ so that the integral will equal the normalization 
+given on the command line (in stars per cubic parsec).
+
+%%----------------------------------------------------------------------------|
+\subsection*{Usage}
+
+\begin{verbatim}
+mknlf norm bright faint [lf]
+\end{verbatim}
+
+\nin
+The order of the command line arguments cannot be changed. They refer to:
+\medskip
+
+\begin{clo}{norm}
+The normalization in stars per cubic parsec.
+\end{clo}
+
+\begin{clo}{bright}
+The bright magnitude limit of the normalization. 
+\end{clo}
+
+\begin{clo}{faint}
+The faint magnitude limit of the normalization. 
+\end{clo}
+
+\begin{clo}{lf}
+The input \lf. If this is not given then \mknlf\ will try to read from
+standard input.
+\end{clo}
+
+%%----------------------------------------------------------------------------|
+\subsection*{Notes}
+
+\mknlf\ will automatically adjust the values of {\tt bright} and {\tt faint}
+to match that of the input \lf\ -- that is no extrapolation is done at either
+end. It then normalizes the \lf\ to contain {\tt norm} stars per cubic parsec.
+The value of 0.13 (for the solar neighborhood) may be considered an adequate 
+default for most purposes.
+
+Part of the normalization process is to integrate the input \lf. The value of
+this summation is printed by \mknlf\ but on the standard error stream (which
+means that it won't get redirected with the output \lf). This can be useful
+for checking \mknlf.
+
+If {\tt bright} and {\tt faint} are the same, \mknlf\ will use the value
+of that magnitude bin to normalize the \lf\ -- no integration will be done.
+
+The format for both the input and output \lf s is the same, and matches the
+formats given for {\sc bsm} and the other utilities.
+
+%%----------------------------------------------------------------------------|
+%% MKSPL                                                                      |
+%%----------------------------------------------------------------------------|
+
+\newpage
+\section{The \mkspl\ Utility}
+
+\mkspl\ is a tool that fits a cubic spline to the input file and writes
+the result to standard out. The fit is performed between the {\tt min} and
+{\tt max} as specified on the command line, with an interval of {\tt del}.
+If these limits are past the limits of the input the cubic spline is likely
+to give strange results. The {\tt -l} option tells \mkspl\ to extend the fit
+past the end points by using linear extrapolation. Values less than {\tt min}
+are derived using the first and second points; values greater than {\tt max}
+use the last and penultimate points. The {\tt -e} options tells \mkspl\ to
+replace values past {\tt max} by the last input point, and values past 
+{\tt min} with the first -- in other words in {\em extends} the input file.
+
+%%----------------------------------------------------------------------------|
+\subsection*{Usage}
+
+\begin{verbatim}
+mkspl [-l|-e] min max del [file]
+\end{verbatim}
+
+\nin
+The order of the command line arguments cannot be changed. They refer to:
+\medskip
+
+\begin{clo}{-l}
+Extend points past the input function limits using linear extrapolation.
+\end{clo}
+
+\begin{clo}{-e}
+Extend points past the input function limits using the first or last point
+in the input function.
+\end{clo}
+
+\begin{clo}{min}
+Staring point for the cubic spline fit.
+\end{clo}
+
+\begin{clo}{max}
+End point of the cubic spline fit.
+\end{clo}
+
+\begin{clo}{del}
+The interval for the fit.
+\end{clo}
+
+%%----------------------------------------------------------------------------|
+\subsection*{Notes}
+
+The input file (two column data) must be sorted increasing in the first
+column. The end points of the input file do not have to match up with 
+{\tt max} and {\tt min}: the {\tt -l} and {\tt -e} options are provided to 
+stop the fit going weird in such a case.
+
+Note that \mkspl\ is fairly generic and can be used on {\em any} file of the
+right format. It does not produce a comment line on output so that it can be
+used in a variety of situations.
+
+
+%%----------------------------------------------------------------------------|
+%% MKXLF                                                                      |
+%%----------------------------------------------------------------------------|
+
+\newpage
+\section{The \mkxlf\ Utility}
+
+The \mkxlf\ utility produces a \lf\ with a given slope. It is mainly used to
+create test data, and is usually used in conjunction with \mknlf. It produces
+a \lf\ according to:
+\[
+N = M^{x} 
+\]
+between {\tt bright} and {\tt faint} at an interval of {\tt del} (all given
+on the command line). The output is a \lf\ that can be used in {\sc bsm}, 
+{\sc egm} and all the other utilities.
+
+%%----------------------------------------------------------------------------|
+\subsection*{Usage}
+
+\begin{verbatim}
+mkxlf x bright faint del
+\end{verbatim}
+
+\nin
+The order of the command line arguments cannot be changed. They refer to:
+\medskip
+
+\begin{clo}{x}
+The slope of the luminosity function.
+\end{clo}
+
+\begin{clo}{bright}
+The brightest magnitude on output.
+\end{clo}
+
+\begin{clo}{faint}
+The faintest magnitude on output.
+\end{clo}
+
+\begin{clo}{del}
+The magnitude interval to use for the output \lf.
+\end{clo}
+
+%%----------------------------------------------------------------------------|
+\subsection*{Notes}
+
+None. It's too simple to have notes!
+
+%%----------------------------------------------------------------------------|
+%% EGMCMP                                                                     |
+%%----------------------------------------------------------------------------|
+
+\newpage
+\section{The \egmcmp\ Utility}
+
+The \egmcmp\ program may be of limited use -- it was written for a specific
+purpose by the author, but may be used as the basis for other users to adapt.
+It compares an \egm\ model file with a file containing observed data and 
+computes the $\chi^2$ statistic.
+
+%%----------------------------------------------------------------------------|
+\subsection*{Usage}
+
+\begin{verbatim}
+egmcmp [-cqrv#] d|s|t bright faint egm\_file dat\_file [egm\_file dat\_file...]
+\end{verbatim}
+
+\nin
+The order of the command line arguments cannot be changed. The optional
+arguments must be grouped together. Pairs of \egm\ and comparison files may
+analysed -- each pair will be read and the results added to the ``running''
+$\chi^2$ value. The arguments refer to:
+\medskip
+
+\begin{clo}{-c}
+Print out the $\chi^2$ statistic. This is the default.
+\end{clo}
+
+\begin{clo}{-q}
+Print out the $\chi^2$ probability, $Q(\chi^2|\nu)$.
+\end{clo}
+
+\begin{clo}{-r}
+Print out the reduced $\chi^2$ statistic, $\chi^2/\nu$.
+\end{clo}
+
+\begin{clo}{-v}
+Turns on verbose mode -- each line of data being used to find $\chi^2$ is
+displayed, along with $Q(\chi^2|\nu)$ and $\chi^2$.
+\end{clo}
+
+\begin{clo}{-\#}
+Here {\tt \#} represents a number -- the default is 1. It sets the method to
+be used to determine $\chi^2$. See the source code ({\tt egmcmp.c}) to find
+out which method does what.
+\end{clo}
+
+\begin{clo}{d}
+Uses the disk counts in the comparison.
+\end{clo}
+
+\begin{clo}{s}
+Uses the spheroid counts in the comparison.
+\end{clo}
+
+\begin{clo}{t}
+Uses the total of the disk and spheroid counts in the comparison.
+\end{clo}
+
+\begin{clo}{bright}
+The brightest magnitude bin to include in the comparison.
+\end{clo}
+
+\begin{clo}{faint}
+The faintest magnitude bin to include in the comparison.
+\end{clo}
+
+\begin{clo}{egm\_file}
+The \egm\ file containing the model results. Only the number count section is
+read, and currently only 2 component models are supported.
+\end{clo}
+
+\begin{clo}{dat\_file}
+The data file for comparison. 
+\end{clo}
+
+%%----------------------------------------------------------------------------|
+\subsection*{Notes}
+
+
+%%----------------------------------------------------------------------------|
+%% ADD2EGM                                                                    |
+%%----------------------------------------------------------------------------|
+
+\newpage
+\section{The \addegm\ Utility}
+
+This does...
+
+%%----------------------------------------------------------------------------|
+\subsection*{Usage}
+
+\begin{verbatim}
+addegm [-comp] bright faintt < egm\_file
+\end{verbatim}
+
+\nin
+The order of the command line arguments cannot be changed. They refer to:
+\medskip
+
+\begin{clo}{comp}
+comp is one of d s t
+\end{clo}
+
+\begin{clo}{bright}
+
+\end{clo}
+
+\begin{clo}{faint}
+
+\end{clo}
+
+
+%%----------------------------------------------------------------------------|
+\subsection*{Notes}
+
+
+
+
+
+%%----------------------------------------------------------------------------|
+%% APPENDIX A                                                                 |
+%%----------------------------------------------------------------------------|
+
+\newpage
+\section*{Appendix A -- Installing GMU}
+
+Installation is fairly straightforward, consisting of unpacking the 
+distribution archive and typing ``make''. The latest \gmu\ should be archived
+as ``gmu-X.X.tar.gz'' or ``GmuSrcXX.zip'', where the XX is the version number.
+The current version is 1.0. If you have any problems contact the author via 
+e-mail at {\tt hodder@geop.ubc.ca}. Assuming you have, or can get, one of
+these files (available from the author or via FTP) you should do the following:
+
+\begin{enumerate}
+\item Ensure you have an ANSI C compiler on your system.  The GNU  compiler
+gcc works just fine (\gmu\ was developed with it). If you don't have one 
+you're out of luck. Talk to your local UNiX wizard.
+
+\item Make a directory for the source code.
+\begin{verbatim}
+$ mkdir /home/fred/gmusrc
+\end{verbatim}
+
+\item Change to that directory and move the \gmutar\ file into it.
+\begin{verbatim}
+$ cd gmusrc
+$ mv ../gmu-1.2.tar.gz .
+\end{verbatim}
+
+\item If you have the tarred, compressed file then uncompress and untar it (!):
+\begin{verbatim}
+$ zcat gmu-1.2.tar.gz | tar xvf -
+\end{verbatim}
+
+\item If you have the zipped file and access to unzip:
+\begin{verbatim}
+$ unzip GmuSrc12.zip
+\end{verbatim}
+
+\item Unpacking the file will create  several files, most of them C code.
+Edit the Makefile. Change the definition of BINDIR to where you want the
+executables to live.
+
+\item Make the executables:
+\begin{verbatim}
+$ make all
+\end{verbatim}
+
+\item If everything  works O.K  there  should  be no  error messages during
+compilation. If not then see below for troubleshooting.
+
+\item Clean up the src directory:
+\begin{verbatim}
+$ make clean
+\end{verbatim}
+
+\item Install the programs:
+\begin{verbatim}
+$ make install
+\end{verbatim}
+
+\item If you have \LaTeX\ installed on your system make the manual:
+\begin{verbatim}
+$ make manual
+\end{verbatim}
+\end{enumerate}
+
+%%----------------------------------------------------------------------------|
+\subsection*{Troubleshooting}
+
+Most of the problems with the \gmu\ will probably occur during compilation.
+\gmu\ uses many ANSI C constructs so it must be compiled with an ANSI C 
+compatible complier (such as gcc). If you don't have gcc, or  something 
+like it, you can try to get a conversion  program to convert ANSI to K\&R 
+(traditional) C.
+
+%%----------------------------------------------------------------------------|
+\subsection*{Running GMU at UBC}
+
+If you are at UBC you do not need to do any installation -- the current
+version of the \gmu\ live in /home/hodder/bin. Add this to your path if you
+want, or copy the executables where you will. 
+
+\end{document}

@@ -1,0 +1,339 @@
+bsm_read 1	# Bahcall - Soneira Galaxy Model.
+		# SM macros to plot output from bsm. Note that if the output
+		# format is changed  this macro set will also  probably have 
+		# to be changed.
+		
+		define bfile $1
+		data $bfile
+		
+		# read general parameters		
+		define pfile read 1 6		# parameter file
+		define ncomp read 1 8		# no. of components
+		define l     read 2 3		# gal. longitude
+		define b     read 2 6		# gal. latitude
+		define A     read 2 9		# field size
+		define mabrt read 3 3           # brt. app. mag.
+		define madim read 3 6		# app. mag. limit
+		define dm    read 3 9		# app. mag. step
+		define Mbin  read 3 12          # bin size/scaling
+		define Mbrd  read 4 3		# M bright limit (disk)
+		define Mbrs  read 4 6		# M bright limit (sphd)
+		define Mdim  read 4 9		# abs. mag. limit for LF
+		define dM    read 4 12		# abs. mag. step
+		define Cerr  read 5 3		# colour error
+		define Cint  read 5 6		# colour interval
+		define Cbin  read 5 9		# colour bin size
+		define maxC  read 6 3		# max. colour
+		define minC  read 6 6		# min. colour
+		define mbc   read 6 9		# bright limit of col. dist.
+		define mfc   read 6 12		# faint limit of col. dist.
+		define dr    read 7 3		# distance step for DSK int.
+		define r0    read 7 6		# galactocentric distance
+		define abs   read 7 9           # fixed abs. value
+		define amode read 7 12		# abs. mode
+		define a0    read 8 3  	        # abs. scale height
+		define a1    read 8 6		# abs. at poles
+		define a2    read 8 9		# Sandage a2 parameter
+		define a3    read 8 12		# Sandage a3 parameter
+		define fmsfn read 9 3		# FMS file
+		
+		# read DSK parameters
+		define den_d read 12 3		# disk density norm.
+		define psl_d read 12 6		# disk scale length
+		define gsh_d read 12 9		# disk giant scale height
+		define dshfm read 13 3          # disk * scale ht. mag limit
+		define dshfh read 13 6          # disk * scale ht. limit
+		define dshbm read 13 9          # disk * scale ht. mag limit
+		define dshbh read 13 12         # disk * scale ht. limit
+		define dsklf read 14 3		# DSK LF file
+		define dmcmd read 14 6		# DKS M-S CMD file
+		define dgcmd read 14 9		# DG CMD file
+		
+		# how many components ?
+		if ($ncomp == 2) {
+		  # read SPH parameters
+		  define den_s read 17 3	# spher density norm.
+		  define rek   read 17 6        # eff. radius of sph
+		  define es    read 17 9	# spheroid eccentricity
+		  define sphlf read 18 3	# SPH LF file
+		  define smcmd read 18 6	# SPH M-S CMD file
+		  define sgcmd read 18 9	# SPH CMD file
+		  # read colour table
+		  define tcdsk read 21 5	# DSK *s in col. dist
+		  define tcsph read 21 6	# SPH *s in col. dist
+		  define tctot read 21 7	# TOT *s in col. dist
+		  define acdsk read 22 4	# DSK mean colour
+		  define acsph read 22 5	# SPH mean colour
+		  define actot read 22 6	# TOT mean colour
+		  define sfdsk read 23 4	# DSK * fraction on MS
+		  define sfsph read 23 5	# SPH * fraction on MS
+		  define gfdsk read 24 4	# DSK giant * fraction
+		  define gfsph read 24 5	# SPH giant * fraction
+		  define gftot read 24 6	# TOT giant * fraction
+		} else {
+		  # read THK parameters
+		  define den_t read 17 3	# Tdisk density norm.
+		  define psl_t read 17 6	# Tdisk scale length
+		  define gsh_t read 17 9	# Tdisk giant scale height
+		  define tshfm read 18 3        # Tdisk * scale ht. mag limit
+		  define tshfh read 18 6        # Tdisk * scale ht. limit
+		  define tshbm read 18 9        # Tdisk * scale ht. mag limit
+		  define tshbh read 18 12       # Tdisk * scale ht. limit
+		  define thklf read 19 3	# THK LF file
+		  define tmcmd read 19 6	# THK M-S CMD file
+		  define tgcmd read 19 9	# TG CMD file
+		  # read SPH parameters
+		  define den_s read 22 3	# spher density norm.
+		  define rek   read 22 6        # eff. radius of sph
+		  define es    read 22 9	# spheroid eccentricity
+		  define mto   read 22 2	# sph. T-O mag.
+		  define sphlf read 23 3	# SPH LF file
+		  define smcmd read 23 6	# SPH M-S CMD file
+		  define sgcmd read 23 9	# SG CMD file
+		  # read colour table
+		  define tcdsk read 26 5	# DSK *s in col. dist
+		  define tcthk read 26 6	# THK *s in col. dist
+		  define tcsph read 26 7	# SPH *s in col. dist
+		  define tctot read 26 8	# TOT *s in col. dist
+		  define acdsk read 27 4	# DSK mean colour
+		  define acthk read 27 5	# THK mean colour
+		  define acsph read 27 6	# SPH mean colour
+		  define actot read 27 7	# TOT mean colour
+		  define sfdsk read 28 4	# DSK * fraction on MS
+		  define sfthk read 28 5	# THK * fraction on MS
+		  define sfsph read 28 6	# SPH * fraction on MS
+		  define gfdsk read 29 4	# DSK giant * fraction
+		  define gfthk read 29 5	# THK giant * fraction
+		  define gfsph read 29 6	# SPH giant * fraction
+		  define gftot read 29 7	# TOT giant * fraction
+		}
+		
+		# calculate position of data blocks (start and end lines)
+		define nh  (($ncomp == 2) ? 26 : 31)	# length of header
+		define nn  ($nh+1)			# line of magnm
+		define nnn (($madim-$mabrt)/$dm+1)	# number in num. dist.
+		define ncn (($maxC-$minC)/$Cbin)	# number in col. dist.
+		
+		# read number distribution
+		define magnm read $nn 2			# Mag. name
+		define nns ($nn+1)		 	# start of num. dist.
+		define nne ($nn+$nnn) 			# end of num. dist.
+		if ($ncomp == 2) {
+		  lines $nns $nne
+		  read { mag 2 ad 4 nd 5 as 6 ns 7 aT 8 nT 9 }
+		} else {
+		  lines $nns $nne
+		  read { mag 2 ad 4 nd 5 at 6 nt 7 }
+		  define nns ($nne+2)
+		  define nne ($nns+$nnn-1)
+		  lines $nns $nne
+		  read {  as 4 ns 5 aT 6 nT 7 }
+		}
+		
+		set log_ad = lg(ad) if (ad > 0.000)
+		set mag_ad = mag    if (ad > 0.000)
+		set log_nd = lg(nd) if (nd > 0.000)
+		set mag_nd = mag    if (nd > 0.000)
+		set log_as = lg(as) if (as > 0.000)
+		set mag_as = mag    if (as > 0.000)
+		set log_ns = lg(ns) if (ns > 0.000)
+		set mag_ns = mag    if (ns > 0.000)
+		set log_aT = lg(aT) if (aT > 0.000)
+		set mag_aT = mag    if (aT > 0.000)
+		set log_nT = lg(nT) if (nT > 0.000)
+		set mag_nT = mag    if (nT > 0.000)
+		if ($ncomp == 3) {
+		  set log_at = lg(at) if (at > 0.000)
+		  set mag_at = mag    if (at > 0.000)
+		  set log_nt = lg(nt) if (nt > 0.000)
+		  set mag_nt = mag    if (nt > 0.000)
+		}
+		
+		# read colour distribution
+		define nc  ($nne+3)			# line of colnm
+		define ncs ($nne+4) 			# start of col. dist.
+		define nce ($ncs+$ncn) 			# end of col. dist.
+		define colnm read $nc 1			# colour name
+		lines $ncs $nce
+		if ($ncomp == 2) {
+		  read { col 2 cd 4 cs 5 cT 6 }
+		} else {
+		  read { col 2 cd 4 ct 5 cs 6 cT 7 }
+		}
+		
+bsm_plot 11	# plot all three graphs from data in $1
+		# if no arg. then assume file has been read
+		if ($?1 == 1) { bsm_read $1 }
+		
+		# plot differential counts
+		bsm_diff
+		
+		continue
+		
+		# plot integral counts
+		bsm_int
+		
+		continue
+		
+		# plot colour distribution
+		bsm_col
+		
+bsm_print 0	# plot all three graphs on laser
+		laser
+		
+		# plot differential counts
+		bsm_diff
+		
+		page
+		
+		# plot integral counts
+		bsm_int
+		
+		page
+		
+		# plot colour distribution
+		bsm_col
+		
+bsm_diff 0	#plot differential counts
+		expand 0.8
+		if ($ncomp == 2) {
+		  getlim1 log_ad log_as log_aT min_a max_a 
+		} else {
+		  getlim2 log_ad log_at log_as log_aT min_a max_a
+		}
+		limits $mabrt $madim $min_a $max_a erase box
+		ltype 1 connect mag_ad log_ad
+		ltype 2 connect mag_as log_as
+		ltype 0 connect mag_aT log_aT
+		if ($ncomp == 3) { ltype 3 connect mag_at log_at }
+		limits 0 100 0 100
+		xlabel $magnm
+		ylabel log A($magnm) (No./$A sq. deg.)
+		relocate  5 95 ltype 0 label Differential Number Counts
+		relocate  5 90 ltype 1 draw 10 90 putlabel 6 Disk
+		if ($ncomp == 2) {
+		  relocate  5 87 ltype 2 draw 10 87 putlabel 6 Spheroid
+		  relocate  5 84 ltype 0 draw 10 84 putlabel 6 Total
+		} else {
+		  relocate  5 87 ltype 3 draw 10 87 putlabel 6 Thick Disk
+		  relocate  5 84 ltype 2 draw 10 84 putlabel 6 Spheroid
+		  relocate  5 81 ltype 0 draw 10 81 putlabel 6 Total
+		}
+		title "$!!bfile : ($!!l,$!!b)"
+		
+bsm_int	0	#plot integral counts
+		expand 0.8
+		if ($ncomp == 2) {
+		  getlim1 log_nd log_ns log_nT min_n max_n
+		} else {
+		  getlim2 log_nd log_nt log_ns log_nT min_n max_n
+		}
+		limits $mabrt $madim $min_n $max_n erase box
+		ltype 1 connect mag_nd log_nd
+		ltype 2 connect mag_ns log_ns
+		ltype 0 connect mag_nT log_nT
+		if ($ncomp == 3) { ltype 3 connect mag_nt log_nt }
+		limits 0 100 0 100
+		xlabel $magnm
+		ylabel log N(<$magnm) (No./$A sq. deg.)
+		relocate  5 95 ltype 0 label Integral Number Counts
+		relocate  5 90 ltype 1 draw 10 90 putlabel 6 Disk
+		if ($ncomp == 2) {
+		  relocate  5 87 ltype 2 draw 10 87 putlabel 6 Spheroid
+		  relocate  5 84 ltype 0 draw 10 84 putlabel 6 Total
+		} else {
+		  relocate  5 87 ltype 3 draw 10 87 putlabel 6 Thick Disk
+		  relocate  5 84 ltype 2 draw 10 84 putlabel 6 Spheroid
+		  relocate  5 81 ltype 0 draw 10 81 putlabel 6 Total
+		}		
+		title "$!!bfile : ($!!l,$!!b)"
+		
+bsm_col	0	# plot colour distribution
+		expand 0.8
+		limits $minC $maxC cT erase box
+		ltype 1 connect col cd
+		ltype 2 connect col cs
+		ltype 0 connect col cT
+		if ($ncomp == 3) { ltype 3 connect col ct }
+		limits 0 100 0 100
+		xlabel $colnm 
+		ylabel N($colnm) (No./$Cbin mag./$A sq. deg.) [$mbc to $mfc] 
+		relocate 70 95 ltype 0 label Colour Distribution
+		relocate 70 90 ltype 1 draw 75 90 putlabel 6 Disk
+		if ($ncomp == 2) {
+		  relocate 70 87 ltype 2 draw 75 87 putlabel 6 Spheroid
+		  relocate 70 84 ltype 0 draw 75 84 putlabel 6 Total
+		} else {
+		  relocate 70 87 ltype 3 draw 75 87 putlabel 6 Thick Disk
+		  relocate 70 84 ltype 2 draw 75 84 putlabel 6 Spheroid
+		  relocate 70 81 ltype 0 draw 75 81 putlabel 6 Total
+		}		
+		title "$!!bfile : ($!!l,$!!b)"
+		
+		############################
+		#   Utilities for bsm.sm   #
+		############################
+		
+continue 0	# continue upon <CR>
+		define con " "
+		define con ? {Press [RETURN] to continue.}
+		
+maxmin	3	# get min & max of vector:
+		# maxmin word max min 
+		define len (dimen($1))
+		define min ($1[0])
+		define max ($1[0])
+		do x=1,$len-1 {
+		if($1[$x] < $min) { define min ($1[$x]) }
+		if($1[$x] > $max) { define max ($1[$x]) }
+		}
+		define $2 ($max) define $3 ($min)
+		foreach v (min max) {define $v delete}
+		
+getlim1	5	# get min & max of a series of 3 vectors:
+		# getlim1 word1 word2 word3 min_lim max_lim	
+		maxmin $1 max1 min1
+		maxmin $2 max2 min2 
+		maxmin $3 max3 min3 
+		
+		define $4 ($min1) define $5 ($max1)
+		
+		if ($min2 < $$4) {define $4 ($min2)}
+		if ($min3 < $$4) {define $4 ($min3)}
+		if ($max2 > $$5) {define $5 ($max2)}
+		if ($max3 > $$5) {define $5 ($max3)}
+		
+		define diff ($$5 - $$4)
+		define $4 ($$4 - 0.05*$diff)
+		define $5 ($$5 + 0.05*$diff)
+		
+		foreach v (min1 max1 min2 max2 min3 max3 diff) {
+		define $v delete}
+		
+getlim2	6	# get min & max of a series of 4 vectors:
+		# getlim2 word1 word2 word3 word4 min_lim max_lim	
+		maxmin $1 max1 min1
+		maxmin $2 max2 min2 
+		maxmin $3 max3 min3 
+		maxmin $4 max4 min4
+		
+		define $5 ($min1) define $6 ($max1)
+		
+		if ($min2 < $$5) {define $5 ($min2)}
+		if ($min3 < $$5) {define $5 ($min3)}
+		if ($min4 < $$5) {define $5 ($min4)}
+		if ($max2 > $$6) {define $6 ($max2)}
+		if ($max3 > $$6) {define $6 ($max3)}
+		if ($max4 > $$6) {define $6 ($max4)}
+		
+		define diff ($$6 - $$5)
+		define $5 ($$5 - 0.05*$diff)
+		define $6 ($$6 + 0.05*$diff)
+		
+		foreach v (min1 max1 min2 max2 min3 max3 min4 max4 diff) {
+		define $v delete}
+		
+rlabel	3	# relocate and label
+		relocate $1 $2
+		label $3
+		
